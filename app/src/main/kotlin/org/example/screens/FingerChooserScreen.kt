@@ -11,15 +11,15 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
@@ -30,8 +30,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.example.components.ConfettiState
-import org.example.components.SparkleConfetti
 import org.example.theme.*
 import kotlin.random.Random
 
@@ -49,6 +47,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
 
     var gameState by remember { mutableStateOf(FingerGameState.WAITING) }
     var targetWinners by remember { mutableStateOf(1) }
+    var minParticipants by remember { mutableStateOf(2) }
     
     val activeTouches = remember { mutableStateMapOf<PointerId, Offset>() }
     val touchColors = remember { mutableStateMapOf<PointerId, Color>() }
@@ -57,16 +56,14 @@ fun FingerChooserScreen(onBack: () -> Unit) {
     
     var countdownProgress by remember { mutableStateOf(1f) } // 1.0 down to 0.0
     var countdownText by remember { mutableStateOf("") }
-    
-    val confettiState = remember { ConfettiState() }
 
     // Color list for fingers
     val colorsList = listOf(
-        Color(0xFF00F0FF), // Cyan
-        Color(0xFF9D4EDD), // Purple
-        Color(0xFFFF007F), // Pink
+        Color(0xFF06B6D4), // Cyan
+        Color(0xFF8B5CF6), // Purple
+        Color(0xFFEC4899), // Pink
         Color(0xFFFFD700), // Gold
-        Color(0xFF39FF14), // Green
+        Color(0xFF10B981), // Green
         Color(0xFFFF5722)  // Orange
     )
 
@@ -91,6 +88,13 @@ fun FingerChooserScreen(onBack: () -> Unit) {
         }
     }
 
+    // Auto-adjust minParticipants if targetWinners changes
+    LaunchedEffect(targetWinners) {
+        if (minParticipants < targetWinners + 1) {
+            minParticipants = targetWinners + 1
+        }
+    }
+
     // Double check when touch counts change
     LaunchedEffect(activeTouches.size) {
         // Assign colors to new touches
@@ -111,7 +115,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
 
         // Logic depending on count
         if (gameState != FingerGameState.SELECTED) {
-            if (activeTouches.size >= targetWinners + 1 || (targetWinners == 1 && activeTouches.size >= 2)) {
+            if (activeTouches.size >= minParticipants) {
                 // We have enough fingers to start a countdown!
                 if (gameState == FingerGameState.WAITING) {
                     gameState = FingerGameState.COUNTDOWN
@@ -124,12 +128,6 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                     // Quick alert double-buzz to notify user of cancellation
                     triggerVibration(50, 100)
                 }
-            }
-        } else {
-            // SELECTED state, once all fingers are lifted, reset to waiting
-            if (activeTouches.isEmpty()) {
-                gameState = FingerGameState.WAITING
-                winningPointers.clear()
             }
         }
     }
@@ -169,14 +167,6 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                 val shuffledKeys = keysList.shuffled()
                 val winners = shuffledKeys.take(winnersCount)
                 winningPointers.addAll(winners)
-                
-                // Spawn confetti at winning locations
-                winners.forEach { winnerId ->
-                    val pos = activeTouches[winnerId]
-                    if (pos != null) {
-                        confettiState.spawn(pos.x, pos.y, 40)
-                    }
-                }
                 
                 // Vibration celebration
                 triggerVibration(400, 255)
@@ -227,10 +217,12 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                                 }
                             }
                         } else {
-                            // In selected state, we only track releases to clear out dead pointer touches
+                            // In selected state, track releases AND track movements of winning fingers so they move smoothly
                             changes.forEach { change ->
                                 if (!change.pressed) {
                                     activeTouches.remove(change.id)
+                                } else if (winningPointers.contains(change.id)) {
+                                    activeTouches[change.id] = change.position
                                 }
                             }
                         }
@@ -240,39 +232,51 @@ fun FingerChooserScreen(onBack: () -> Unit) {
     ) {
         // Touch Rings & Interactive Dials Canvas
         Canvas(modifier = Modifier.fillMaxSize()) {
-            activeTouches.forEach { (pointerId, position) ->
-                val color = touchColors[pointerId] ?: NeonCyan
-                val isWinner = winningPointers.contains(pointerId)
-                val isSelectedState = gameState == FingerGameState.SELECTED
+            val isSelectedState = gameState == FingerGameState.SELECTED
 
-                if (isSelectedState) {
-                    if (isWinner) {
-                        // Draw winner ring with pulsing glow
-                        drawCircle(
-                            color = NeonGreen.copy(alpha = 0.2f),
-                            radius = 160f,
-                            center = position
-                        )
-                        drawCircle(
-                            color = NeonGreen,
-                            radius = 70f,
-                            center = position
-                        )
-                        drawCircle(
-                            color = Color.White,
-                            radius = 60f,
-                            center = position,
-                            style = Stroke(width = 8f)
-                        )
-                    } else {
-                        // Non-winners fade away with transparent gray
-                        drawCircle(
-                            color = Color.Gray.copy(alpha = 0.2f),
-                            radius = 50f,
-                            center = position
+            if (isSelectedState && winningPointers.isNotEmpty()) {
+                // 1. Draw winner full-screen background overlay with holes for active winners
+                val firstWinnerColor = touchColors[winningPointers.firstOrNull()] ?: NeonGreen
+                
+                val fullScreenPath = Path().apply {
+                    addRect(androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height))
+                }
+                
+                var resultPath = fullScreenPath
+                winningPointers.forEach { winnerId ->
+                    val pos = activeTouches[winnerId]
+                    if (pos != null) {
+                        val circlePath = Path().apply {
+                            addOval(androidx.compose.ui.geometry.Rect(center = pos, radius = 120f))
+                        }
+                        resultPath = Path.combine(
+                            operation = PathOperation.Difference,
+                            path1 = resultPath,
+                            path2 = circlePath
                         )
                     }
-                } else {
+                }
+                
+                // Draw the subtracted path (winner color covers everything except hollow circles)
+                drawPath(path = resultPath, color = firstWinnerColor)
+                
+                // 2. Draw white circular borders for active winners
+                winningPointers.forEach { winnerId ->
+                    val pos = activeTouches[winnerId]
+                    if (pos != null) {
+                        drawCircle(
+                            color = Color.White,
+                            radius = 120f,
+                            center = pos,
+                            style = Stroke(width = 8f)
+                        )
+                    }
+                }
+            } else {
+                // WAITING or COUNTDOWN state: standard touch rings
+                activeTouches.forEach { (pointerId, position) ->
+                    val color = touchColors[pointerId] ?: NeonCyan
+                    
                     // Standard Touch Node & Ripples
                     drawCircle(
                         color = color.copy(alpha = rippleAlpha),
@@ -307,9 +311,6 @@ fun FingerChooserScreen(onBack: () -> Unit) {
             }
         }
 
-        // Particle Celebrations Layer
-        SparkleConfetti(state = confettiState)
-
         // Status Messages Overlay
         Column(
             modifier = Modifier
@@ -321,7 +322,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
             when (gameState) {
                 FingerGameState.WAITING -> {
                     Text(
-                        text = if (activeTouches.isEmpty()) "TEMPELKAN JARI" else "Butuh ${targetWinners + 1 - activeTouches.size} jari lagi!",
+                        text = if (activeTouches.isEmpty()) "TEMPELKAN JARI" else "Butuh ${minParticipants - activeTouches.size} jari lagi!",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White.copy(alpha = 0.8f),
@@ -354,21 +355,57 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                     )
                 }
                 FingerGameState.SELECTED -> {
-                    Text(
-                        text = "GOTCHA!",
-                        fontSize = 44.sp,
-                        fontWeight = FontWeight.Black,
-                        color = NeonGreen,
-                        textAlign = TextAlign.Center,
-                        letterSpacing = 4.sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Angkat semua jari untuk mengulang",
-                        fontSize = 14.sp,
-                        color = TextSecondary,
-                        textAlign = TextAlign.Center
-                    )
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(Color.Black.copy(alpha = 0.45f))
+                            .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(24.dp))
+                            .padding(horizontal = 32.dp, vertical = 24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "GOTCHA!",
+                                fontSize = 40.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color.White,
+                                textAlign = TextAlign.Center,
+                                letterSpacing = 4.sp
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "Keputusan telah diambil",
+                                fontSize = 14.sp,
+                                color = Color.White.copy(alpha = 0.8f),
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(20.dp))
+                            
+                            // Glassmorphic Ulang Button
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color.White)
+                                    .clickable {
+                                        gameState = FingerGameState.WAITING
+                                        winningPointers.clear()
+                                        triggerVibration(60, 150)
+                                    }
+                                    .padding(horizontal = 20.dp, vertical = 10.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "MAINKAN LAGI",
+                                    color = Color.Black,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 1.sp
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -382,7 +419,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 // Back Button
@@ -390,7 +427,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                     modifier = Modifier
                         .size(44.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(ObsidianSurface)
+                        .background(ObsidianSurface.copy(alpha = 0.85f))
                         .border(1.dp, BorderColor, RoundedCornerShape(12.dp))
                         .clickable(onClick = onBack),
                     contentAlignment = Alignment.Center
@@ -398,52 +435,89 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                     Text("<", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                 }
 
-                // Config Panel for winners count (choose 1 to 5 people)
+                // Config Panel for winners and min fingers
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(16.dp))
                         .background(ObsidianSurface.copy(alpha = 0.85f))
                         .border(1.dp, BorderColor, RoundedCornerShape(16.dp))
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                        .padding(horizontal = 14.dp, vertical = 8.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text(
-                            text = "Pilih:",
-                            color = TextSecondary,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        (1..4).forEach { count ->
-                            val isSelected = targetWinners == count
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSelected) NeonCyan else Color.Transparent)
-                                    .clickable {
-                                        if (gameState == FingerGameState.WAITING) {
-                                            targetWinners = count
-                                            triggerVibration(30, 100)
-                                        }
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = count.toString(),
-                                    color = if (isSelected) ObsidianBg else Color.White,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Pemenang:",
+                                color = TextSecondary,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.width(68.dp)
+                            )
+                            (1..4).forEach { count ->
+                                val isSelected = targetWinners == count
+                                Box(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (isSelected) NeonCyan else Color.Transparent)
+                                        .clickable {
+                                            if (gameState == FingerGameState.WAITING) {
+                                                targetWinners = count
+                                                triggerVibration(30, 100)
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = count.toString(),
+                                        color = if (isSelected) ObsidianBg else Color.White,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                         }
-                        Text(
-                            text = "Orang",
-                            color = TextSecondary,
-                            fontSize = 11.sp
-                        )
+                        
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Min Jari:",
+                                color = TextSecondary,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.width(68.dp)
+                            )
+                            val minPossible = targetWinners + 1
+                            (minPossible..6).forEach { count ->
+                                val isSelected = minParticipants == count
+                                Box(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (isSelected) NeonPurple else Color.Transparent)
+                                        .clickable {
+                                            if (gameState == FingerGameState.WAITING) {
+                                                minParticipants = count
+                                                triggerVibration(30, 100)
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = count.toString(),
+                                        color = if (isSelected) Color.White else TextSecondary,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

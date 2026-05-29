@@ -271,14 +271,14 @@ fun CoinFlipScreen(onBack: () -> Unit) {
                         singleLine = true,
                         enabled = !isFlipping,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
                             focusedBorderColor = NeonPink,
-                            unfocusedBorderColor = BorderColor,
-                            containerColor = ObsidianSurface
+                            unfocusedBorderColor = BorderColor
                         ),
+                        textStyle = LocalTextStyle.current.copy(color = Color.White),
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(ObsidianSurface, RoundedCornerShape(12.dp))
                     )
 
                     // Tails input
@@ -289,14 +289,14 @@ fun CoinFlipScreen(onBack: () -> Unit) {
                         singleLine = true,
                         enabled = !isFlipping,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
                             focusedBorderColor = NeonPurple,
-                            unfocusedBorderColor = BorderColor,
-                            containerColor = ObsidianSurface
+                            unfocusedBorderColor = BorderColor
                         ),
+                        textStyle = LocalTextStyle.current.copy(color = Color.White),
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(ObsidianSurface, RoundedCornerShape(12.dp))
                     )
                 }
             }

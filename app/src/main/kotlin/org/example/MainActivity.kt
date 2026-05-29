@@ -3,6 +3,9 @@ package org.example
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.EaseInOutQuart
 import androidx.compose.runtime.*
 import androidx.core.view.WindowCompat
 import org.example.screens.CoinFlipScreen
@@ -22,23 +25,53 @@ class MainActivity : ComponentActivity() {
             CatchaTheme {
                 var currentScreen by remember { mutableStateOf("menu") }
 
-                when (currentScreen) {
-                    "menu" -> MainMenuScreen(
-                        onNavigateToFingerChooser = { currentScreen = "finger" },
-                        onNavigateToRoulette = { currentScreen = "roulette" },
-                        onNavigateToCoinFlip = { currentScreen = "coin" }
-                    )
-                    "finger" -> FingerChooserScreen(
-                        onBack = { currentScreen = "menu" }
-                    )
-                    "roulette" -> RouletteScreen(
-                        onBack = { currentScreen = "menu" }
-                    )
-                    "coin" -> CoinFlipScreen(
-                        onBack = { currentScreen = "menu" }
-                    )
+                AnimatedContent(
+                    targetState = currentScreen,
+                    transitionSpec = {
+                        // Custom slide & fade screen transitions for high-fidelity feel
+                        if (targetState == "menu") {
+                            // When going back to menu, slide from left to right (reverse)
+                            (slideInHorizontally(
+                                initialOffsetX = { -it / 4 },
+                                animationSpec = tween(400, easing = EaseInOutQuart)
+                            ) + fadeIn(animationSpec = tween(400, easing = EaseInOutQuart))) togetherWith
+                            (slideOutHorizontally(
+                                targetOffsetX = { it / 4 },
+                                animationSpec = tween(300, easing = EaseInOutQuart)
+                            ) + fadeOut(animationSpec = tween(300, easing = EaseInOutQuart)))
+                        } else {
+                            // When navigating from menu to games, slide from right to left (forward)
+                            (slideInHorizontally(
+                                initialOffsetX = { it / 4 },
+                                animationSpec = tween(400, easing = EaseInOutQuart)
+                            ) + fadeIn(animationSpec = tween(400, easing = EaseInOutQuart))) togetherWith
+                            (slideOutHorizontally(
+                                targetOffsetX = { -it / 4 },
+                                animationSpec = tween(300, easing = EaseInOutQuart)
+                            ) + fadeOut(animationSpec = tween(300, easing = EaseInOutQuart)))
+                        }
+                    },
+                    label = "ScreenTransition"
+                ) { screen ->
+                    when (screen) {
+                        "menu" -> MainMenuScreen(
+                            onNavigateToFingerChooser = { currentScreen = "finger" },
+                            onNavigateToRoulette = { currentScreen = "roulette" },
+                            onNavigateToCoinFlip = { currentScreen = "coin" }
+                        )
+                        "finger" -> FingerChooserScreen(
+                            onBack = { currentScreen = "menu" }
+                        )
+                        "roulette" -> RouletteScreen(
+                            onBack = { currentScreen = "menu" }
+                        )
+                        "coin" -> CoinFlipScreen(
+                            onBack = { currentScreen = "menu" }
+                        )
+                    }
                 }
             }
         }
     }
 }
+

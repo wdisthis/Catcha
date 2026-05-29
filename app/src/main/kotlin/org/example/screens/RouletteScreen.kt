@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.example.components.ConfettiState
 import org.example.components.SparkleConfetti
@@ -461,16 +462,15 @@ fun RouletteScreen(onBack: () -> Unit) {
                             singleLine = true,
                             enabled = !isSpinning && optionsList.size < 12,
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
                                 focusedBorderColor = NeonCyan,
-                                unfocusedBorderColor = BorderColor,
-                                containerColor = ObsidianSurface
+                                unfocusedBorderColor = BorderColor
                             ),
+                            textStyle = LocalTextStyle.current.copy(color = Color.White),
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier
                                 .weight(1f)
                                 .height(52.dp)
+                                .background(ObsidianSurface, RoundedCornerShape(12.dp))
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Box(
