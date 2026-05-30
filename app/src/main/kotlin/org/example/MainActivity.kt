@@ -12,6 +12,7 @@ import org.example.screens.CoinFlipScreen
 import org.example.screens.FingerChooserScreen
 import org.example.screens.MainMenuScreen
 import org.example.screens.RouletteScreen
+import org.example.screens.SplashScreen
 import org.example.theme.CatchaTheme
 
 class MainActivity : ComponentActivity() {
@@ -23,13 +24,17 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             CatchaTheme {
-                var currentScreen by remember { mutableStateOf("menu") }
+                var currentScreen by remember { mutableStateOf("splash") }
 
                 AnimatedContent(
                     targetState = currentScreen,
                     transitionSpec = {
                         // Custom slide & fade screen transitions for high-fidelity feel
-                        if (targetState == "menu") {
+                        if (targetState == "menu" && initialState == "splash") {
+                            // Smooth fade-out of the splash screen
+                            fadeIn(animationSpec = tween(600, easing = EaseInOutQuart)) togetherWith
+                            fadeOut(animationSpec = tween(400, easing = EaseInOutQuart))
+                        } else if (targetState == "menu") {
                             // When going back to menu, slide from left to right (reverse)
                             (slideInHorizontally(
                                 initialOffsetX = { -it / 4 },
@@ -54,6 +59,9 @@ class MainActivity : ComponentActivity() {
                     label = "ScreenTransition"
                 ) { screen ->
                     when (screen) {
+                        "splash" -> SplashScreen(
+                            onSplashFinished = { currentScreen = "menu" }
+                        )
                         "menu" -> MainMenuScreen(
                             onNavigateToFingerChooser = { currentScreen = "finger" },
                             onNavigateToRoulette = { currentScreen = "roulette" },
