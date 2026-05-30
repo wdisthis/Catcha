@@ -20,6 +20,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
@@ -59,6 +60,8 @@ fun FingerChooserScreen(onBack: () -> Unit) {
     
     var countdownProgress by remember { mutableStateOf(1f) } // 1.0 down to 0.0
     var countdownText by remember { mutableStateOf("") }
+    
+    var winnerColor by remember { mutableStateOf<Color?>(null) }
 
     // Childish Crayon Color list for fingers
     val colorsList = listOf(
@@ -101,10 +104,17 @@ fun FingerChooserScreen(onBack: () -> Unit) {
 
     // Double check when touch counts change
     LaunchedEffect(activeTouches.size) {
-        // Assign colors to new touches
+        // Assign unique colors to new touches
         activeTouches.keys.forEach { pointerId ->
             if (!touchColors.containsKey(pointerId)) {
-                touchColors[pointerId] = colorsList[Random.nextInt(colorsList.size)]
+                val usedColors = touchColors.values.toSet()
+                val availableColors = colorsList.filter { it !in usedColors }
+                val chosenColor = if (availableColors.isNotEmpty()) {
+                    availableColors.random()
+                } else {
+                    colorsList.random()
+                }
+                touchColors[pointerId] = chosenColor
             }
         }
         
@@ -168,6 +178,11 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                 val shuffledKeys = keysList.shuffled()
                 val winners = shuffledKeys.take(winnersCount)
                 winningPointers.addAll(winners)
+                
+                val firstWinner = winners.firstOrNull()
+                if (firstWinner != null) {
+                    winnerColor = touchColors[firstWinner]
+                }
                 
                 triggerVibration(400, 255)
             } else {
@@ -235,7 +250,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
 
                 if (isSelectedState && winningPointers.isNotEmpty()) {
                     // 1. Draw winner full-screen crayon overlay with hollow paths for winners
-                    val firstWinnerColor = touchColors[winningPointers.firstOrNull()] ?: NeonGreen
+                    val firstWinnerColor = winnerColor ?: touchColors[winningPointers.firstOrNull()] ?: NeonGreen
                     
                     val fullScreenPath = Path().apply {
                         addRect(androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height))
@@ -337,11 +352,13 @@ fun FingerChooserScreen(onBack: () -> Unit) {
             }
 
             // Status Messages Overlay
+            val isSelectedState = gameState == FingerGameState.SELECTED
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .align(Alignment.Center)
-                    .padding(32.dp),
+                    .align(if (isSelectedState) Alignment.BottomCenter else Alignment.Center)
+                    .padding(horizontal = 32.dp)
+                    .padding(bottom = if (isSelectedState) 40.dp else 0.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 when (gameState) {
@@ -381,48 +398,22 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                         )
                     }
                     FingerGameState.SELECTED -> {
-                        DoodleCard(
-                            backgroundColor = Color.White,
-                            shadowOffset = 8.dp,
-                            modifier = Modifier
-                                .width(310.dp)
-                                .padding(16.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(24.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "GOTCHA!",
-                                    fontSize = 38.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = TextPrimary,
-                                    textAlign = TextAlign.Center,
-                                    letterSpacing = 3.sp
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Text(
-                                    text = "A decision has been made!",
-                                    fontSize = 14.sp,
-                                    color = TextSecondary,
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(24.dp))
-                                
-                                DoodleButton(
-                                    onClick = {
-                                        gameState = FingerGameState.WAITING
-                                        winningPointers.clear()
-                                        triggerVibration(60, 150)
-                                    },
-                                    backgroundColor = CrayonYellow,
-                                    text = "PLAY AGAIN",
-                                    textColor = TextPrimary,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-                        }
+                        Text(
+                            text = "GOTCHA!",
+                            fontSize = 38.sp,
+                            fontWeight = FontWeight.Black,
+                            color = TextPrimary,
+                            textAlign = TextAlign.Center,
+                            letterSpacing = 3.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "A decision has been made!",
+                            fontSize = 15.sp,
+                            color = TextSecondary,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }
@@ -450,12 +441,13 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                         Text("◀", color = TextPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
                     }
 
-                    // Config Panel (Doodle card styling)
-                    DoodleCard(
-                        backgroundColor = Color.White,
-                        shadowOffset = 4.dp,
-                        modifier = Modifier.width(235.dp)
-                    ) {
+                    // Config Panel or Play Again Button (matching the back button)
+                    if (gameState != FingerGameState.SELECTED) {
+                        DoodleCard(
+                            backgroundColor = Color.White,
+                            shadowOffset = 4.dp,
+                            modifier = Modifier.width(235.dp)
+                        ) {
                         Column(
                             modifier = Modifier.padding(10.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -508,7 +500,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    text = "Min Fingers:",
+                                    text = "Fingers:",
                                     color = TextSecondary,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Black,
@@ -545,6 +537,55 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                                         )
                                     }
                                 }
+                            }
+                        }
+                    }
+                    } else {
+                        // Play Again Button (matching the back button on the left!)
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .background(Color.White, RoundedCornerShape(12.dp))
+                                .border(2.5.dp, BorderColor, RoundedCornerShape(12.dp))
+                                .clickable {
+                                    gameState = FingerGameState.WAITING
+                                    winningPointers.clear()
+                                    winnerColor = null
+                                    triggerVibration(60, 150)
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Canvas(
+                                modifier = Modifier.size(22.dp)
+                            ) {
+                                val strokeWidthPx = 2.5.dp.toPx()
+                                val cx = size.width / 2f
+                                val cy = size.height / 2f
+                                val radius = size.minDimension * 0.35f
+                                
+                                val arcSize = androidx.compose.ui.geometry.Size(radius * 2, radius * 2)
+                                val topLeft = Offset(cx - radius, cy - radius)
+                                
+                                // Draw a clockwise circular arc with a gap at the top-right
+                                drawArc(
+                                    color = TextPrimary,
+                                    startAngle = 0f,
+                                    sweepAngle = 270f,
+                                    useCenter = false,
+                                    topLeft = topLeft,
+                                    size = arcSize,
+                                    style = Stroke(width = strokeWidthPx, cap = StrokeCap.Round)
+                                )
+                                
+                                // Arrowhead at the end (top-center, pointing right)
+                                val arrowSize = 4.dp.toPx()
+                                val arrowPath = Path().apply {
+                                    moveTo(cx, cy - radius - arrowSize)
+                                    lineTo(cx + arrowSize * 1.2f, cy - radius)
+                                    lineTo(cx, cy - radius + arrowSize)
+                                    close()
+                                }
+                                drawPath(path = arrowPath, color = TextPrimary)
                             }
                         }
                     }
