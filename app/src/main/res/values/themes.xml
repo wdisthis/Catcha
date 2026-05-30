@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="Theme.Catcha" parent="Theme.Material3.DayNight.NoActionBar">
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.Catcha" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">#6200EE</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <!-- 🌟 RESPONSIVE & SEAMLESS LIGHT THEME STARTUP -->
+        <!-- Use a solid white starting window for instant visual feedback (highly responsive) -->
+        <item name="android:windowBackground">#FFFFFF</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+        
+        <!-- Force Android 12+ system splash screen to be solid white even in system Dark Mode -->
+        <item name="android:windowSplashScreenBackground" tools:targetApi="s">#FFFFFF</item>
+        
+        <!-- Set the system icon to transparent to completely prevent the ugly cropped cat issue -->
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">@android:color/transparent</item>
     </style>
 </resources>
