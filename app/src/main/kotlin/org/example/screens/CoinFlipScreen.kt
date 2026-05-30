@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
@@ -28,6 +27,9 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.example.components.ConfettiState
 import org.example.components.SparkleConfetti
+import org.example.components.DoodleCard
+import org.example.components.DoodleButton
+import org.example.components.NotebookBackground
 import org.example.theme.*
 import kotlin.random.Random
 
@@ -38,8 +40,8 @@ fun CoinFlipScreen(onBack: () -> Unit) {
     val vibrator = remember { context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator }
     val scope = rememberCoroutineScope()
 
-    var optionHeads by remember { mutableStateOf("MAJU") }
-    var optionTails by remember { mutableStateOf("MUNDUR") }
+    var optionHeads by remember { mutableStateOf("GO") }
+    var optionTails by remember { mutableStateOf("BACK") }
 
     var isFlipping by remember { mutableStateOf(false) }
     var resultText by remember { mutableStateOf("") }
@@ -80,19 +82,15 @@ fun CoinFlipScreen(onBack: () -> Unit) {
         triggerVibration(40, 120)
 
         scope.launch {
-            // Decide final winner beforehand
             val landsOnHeads = Random.nextBoolean()
-            
-            // Total 3D rotations: at least 6 full loops (2160 degrees) or 6.5 loops (2340 degrees)
             val finalRotation = if (landsOnHeads) {
                 7 * 360f // lands on Heads side
             } else {
                 7 * 360f + 180f // lands on Tails side
             }
 
-            // Launch concurrent 3D fly up / down, scale, and rotations
             launch {
-                // Fly up to height -400px and fall back
+                // Fly up to height -350px and fall back
                 translationYAnim.animateTo(
                     targetValue = -350f,
                     animationSpec = tween(durationMillis = 800, easing = EaseOutQuad)
@@ -106,7 +104,7 @@ fun CoinFlipScreen(onBack: () -> Unit) {
             launch {
                 // Scale up when flying, scale down on land
                 scaleAnim.animateTo(
-                    targetValue = 1.4f,
+                    targetValue = 1.3f,
                     animationSpec = tween(durationMillis = 800, easing = EaseOutQuad)
                 )
                 scaleAnim.animateTo(
@@ -128,7 +126,7 @@ fun CoinFlipScreen(onBack: () -> Unit) {
             resultText = outcome
             showResultCard = true
 
-            // Catch vibration and confetti
+            // Celebration haptics and confetti
             triggerVibration(250, 180)
             confettiState.spawn(
                 x = context.resources.displayMetrics.widthPixels / 2f,
@@ -138,58 +136,59 @@ fun CoinFlipScreen(onBack: () -> Unit) {
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(ObsidianBg)
-    ) {
+    NotebookBackground {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
+                .padding(bottom = 12.dp)
         ) {
             // Header Bar
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                // Back button styled with custom retro comic border
                 Box(
                     modifier = Modifier
                         .size(44.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(ObsidianSurface)
-                        .border(1.dp, BorderColor, RoundedCornerShape(12.dp))
+                        .background(Color.White, RoundedCornerShape(12.dp))
+                        .border(2.5.dp, BorderColor, RoundedCornerShape(12.dp))
                         .clickable(onClick = onBack),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("<", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text(
+                        text = "◀", 
+                        color = TextPrimary, 
+                        fontWeight = FontWeight.Black, 
+                        fontSize = 16.sp
+                    )
                 }
 
                 Text(
-                    text = "LEMPAR KOIN",
-                    fontSize = 20.sp,
+                    text = "COIN FLIP",
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Black,
-                    color = Color.White,
+                    color = TextPrimary,
                     letterSpacing = 2.sp
                 )
 
                 Spacer(modifier = Modifier.width(44.dp))
             }
 
-            // Coin 3D Arena
+            // Coin Sketch Arena
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
                 contentAlignment = Alignment.Center
             ) {
-                // Interactive 3D Coin Model
+                // Interactive Sketch-styled Coin
                 Box(
                     modifier = Modifier
-                        .size(160.dp)
+                        .size(170.dp)
                         .graphicsLayer {
                             rotationX = rotationXAnim.value
                             translationY = translationYAnim.value
@@ -197,48 +196,60 @@ fun CoinFlipScreen(onBack: () -> Unit) {
                             scaleY = scaleAnim.value
                             cameraDistance = 12f * density
                         }
-                        .shadow(16.dp, CircleShape, spotColor = NeonPink)
-                        .clip(CircleShape)
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(NeonPink, NeonPurple)
-                            )
-                        )
-                        .border(6.dp, Color.White, CircleShape)
+                        .background(CrayonYellow, CircleShape)
+                        .border(4.5.dp, BorderColor, CircleShape)
                         .clickable(enabled = !isFlipping) { flipCoin() },
                     contentAlignment = Alignment.Center
                 ) {
-                    // Determine which side to draw depending on angle
+                    // Determine which side is visible depending on rotation angle
                     val isHeadsVisible = ((rotationXAnim.value + 90f) % 360f) in 90f..270f
                     
                     if (isHeadsVisible) {
-                        // Tails Face
+                        // Tails Face (Childish Sketch Star)
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                             modifier = Modifier
                                 .fillMaxSize()
-                                .graphicsLayer { rotationX = 180f } // flip text so it reads upright on the reverse side
+                                .graphicsLayer { rotationX = 180f }
                         ) {
                             Text(
-                                text = "B",
-                                fontSize = 56.sp,
+                                text = "★",
+                                fontSize = 68.sp,
+                                color = TextPrimary,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = optionTails.uppercase(),
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Black,
-                                color = Color.White
+                                color = TextPrimary.copy(alpha = 0.8f),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 8.dp)
                             )
                         }
                     } else {
-                        // Heads Face
+                        // Heads Face (Childish Smiley Face ☺)
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                             modifier = Modifier.fillMaxSize()
                         ) {
                             Text(
-                                text = "A",
-                                fontSize = 56.sp,
+                                text = "☺",
+                                fontSize = 68.sp,
+                                color = TextPrimary,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = optionHeads.uppercase(),
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Black,
-                                color = Color.White
+                                color = TextPrimary.copy(alpha = 0.8f),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 8.dp)
                             )
                         }
                     }
@@ -252,10 +263,10 @@ fun CoinFlipScreen(onBack: () -> Unit) {
                     .padding(horizontal = 24.dp)
             ) {
                 Text(
-                    text = "Kustomisasi Koin :",
-                    color = TextSecondary,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
+                    text = "Customize Coin:",
+                    color = TextPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Black,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
@@ -267,36 +278,46 @@ fun CoinFlipScreen(onBack: () -> Unit) {
                     OutlinedTextField(
                         value = optionHeads,
                         onValueChange = { optionHeads = it.take(15) },
-                        label = { Text("Koin A (Heads)", color = NeonPink, fontSize = 11.sp) },
+                        label = { Text("Coin Side A (Heads)", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
                         singleLine = true,
                         enabled = !isFlipping,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = NeonPink,
-                            unfocusedBorderColor = BorderColor
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary,
+                            focusedBorderColor = BorderColor,
+                            unfocusedBorderColor = BorderColor.copy(alpha = 0.4f),
+                            focusedLabelColor = TextPrimary,
+                            unfocusedLabelColor = TextSecondary,
+                            cursorColor = TextPrimary
                         ),
-                        textStyle = LocalTextStyle.current.copy(color = Color.White),
+                        textStyle = LocalTextStyle.current.copy(fontWeight = FontWeight.Bold),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .weight(1f)
-                            .background(ObsidianSurface, RoundedCornerShape(12.dp))
+                            .background(Color.White, RoundedCornerShape(12.dp))
                     )
 
                     // Tails input
                     OutlinedTextField(
                         value = optionTails,
                         onValueChange = { optionTails = it.take(15) },
-                        label = { Text("Koin B (Tails)", color = NeonPurple, fontSize = 11.sp) },
+                        label = { Text("Coin Side B (Tails)", fontSize = 11.sp, fontWeight = FontWeight.Bold) },
                         singleLine = true,
                         enabled = !isFlipping,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = NeonPurple,
-                            unfocusedBorderColor = BorderColor
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary,
+                            focusedBorderColor = BorderColor,
+                            unfocusedBorderColor = BorderColor.copy(alpha = 0.4f),
+                            focusedLabelColor = TextPrimary,
+                            unfocusedLabelColor = TextSecondary,
+                            cursorColor = TextPrimary
                         ),
-                        textStyle = LocalTextStyle.current.copy(color = Color.White),
+                        textStyle = LocalTextStyle.current.copy(fontWeight = FontWeight.Bold),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .weight(1f)
-                            .background(ObsidianSurface, RoundedCornerShape(12.dp))
+                            .background(Color.White, RoundedCornerShape(12.dp))
                     )
                 }
             }
@@ -308,91 +329,81 @@ fun CoinFlipScreen(onBack: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
-                    .navigationBarsPadding()
                     .padding(bottom = 24.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Button(
+                DoodleButton(
                     onClick = { flipCoin() },
+                    backgroundColor = NeonPink,
+                    text = if (isFlipping) "FLIPPING..." else "FLIP COIN!",
+                    textColor = Color.White,
                     enabled = !isFlipping,
-                    colors = ButtonDefaults.buttonColors(containerColor = NeonPink),
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(54.dp)
-                        .shadow(16.dp, RoundedCornerShape(16.dp), spotColor = NeonPink)
-                ) {
-                    Text(
-                        text = if (isFlipping) "MELAYANG..." else "LEMPAR KOIN!",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 2.sp
-                    )
-                }
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
 
         // Victory Confetti
         SparkleConfetti(state = confettiState)
 
-        // Floating Victory Outcome Card
+        // Floating Victory Outcome Sobekan Kertas Card
         if (showResultCard) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.75f))
+                    .background(Color.Black.copy(alpha = 0.6f))
                     .clickable { showResultCard = false },
                 contentAlignment = Alignment.Center
             ) {
-                Column(
+                DoodleCard(
+                    backgroundColor = Color.White,
+                    shadowOffset = 8.dp,
                     modifier = Modifier
-                        .width(300.dp)
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(ObsidianSurface)
-                        .border(2.dp, NeonPink, RoundedCornerShape(24.dp))
-                        .padding(28.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .width(310.dp)
+                        .padding(24.dp)
                 ) {
-                    Text(
-                        text = "HASIL KEPUTUSAN",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = NeonCyan,
-                        letterSpacing = 2.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Outcome Box
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(NeonPink.copy(alpha = 0.15f))
-                            .border(1.5.dp, NeonPink, RoundedCornerShape(16.dp))
-                            .padding(vertical = 24.dp),
-                        contentAlignment = Alignment.Center
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = resultText.uppercase(),
-                            fontSize = 28.sp,
+                            text = "DECISION RESULT",
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.Black,
-                            color = Color.White,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 16.dp)
+                            color = TextSecondary,
+                            letterSpacing = 1.5.sp
                         )
-                    }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
-                    Button(
-                        onClick = { showResultCard = false },
-                        colors = ButtonDefaults.buttonColors(containerColor = NeonPink),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("SEPAKAT!", color = Color.White, fontWeight = FontWeight.Bold)
+                        // Highlight Outcome Box (Crayon Casing)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(CrayonYellow.copy(alpha = 0.25f), RoundedCornerShape(16.dp))
+                                .border(2.5.dp, BorderColor, RoundedCornerShape(16.dp))
+                                .padding(vertical = 24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = resultText.uppercase(),
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.Black,
+                                color = TextPrimary,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        DoodleButton(
+                            onClick = { showResultCard = false },
+                            backgroundColor = NeonCyan,
+                            text = "AGREED!",
+                            textColor = Color.White,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
             }

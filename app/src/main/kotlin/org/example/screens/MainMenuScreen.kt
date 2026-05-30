@@ -3,25 +3,22 @@ package org.example.screens
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.foundation.Canvas
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.example.components.DoodleCard
+import org.example.components.NotebookBackground
+import org.example.components.drawZigzagLine
 import org.example.theme.*
 
 @Composable
@@ -30,43 +27,45 @@ fun MainMenuScreen(
     onNavigateToRoulette: () -> Unit,
     onNavigateToCoinFlip: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(ObsidianBg)
-            .padding(24.dp)
-    ) {
-        // Subtle cyber-grid or glowing light orbs behind menu
-        GlowingCircleBackground()
-
+    NotebookBackground {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding(),
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             // Header Section
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(top = 20.dp)
+                modifier = Modifier.padding(top = 24.dp)
             ) {
                 Text(
                     text = "CATCHA",
-                    fontSize = 40.sp,
+                    fontSize = 44.sp,
                     fontWeight = FontWeight.Black,
-                    color = Color.White,
+                    color = TextPrimary,
                     letterSpacing = 6.sp,
-                    modifier = Modifier.drawBehind {
-                        // Drawing a tiny neon glowing line under title
-                    }
+                    modifier = Modifier
+                        .padding(bottom = 12.dp)
+                        .drawBehind {
+                            // Draw a beautiful crayon-red hand-drawn zigzag under the title
+                            drawZigzagLine(
+                                color = CrayonRed,
+                                start = Offset(-12f, size.height + 6.dp.toPx()),
+                                end = Offset(size.width + 12f, size.height + 6.dp.toPx()),
+                                strokeWidth = 6f,
+                                amplitude = 7f
+                            )
+                        }
                 )
+                
                 Text(
-                    text = "Asisten Pengambil Keputusan Seru",
+                    text = "A Fun Decision-Making Assistant",
                     fontSize = 14.sp,
                     color = TextSecondary,
                     textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
@@ -81,30 +80,33 @@ fun MainMenuScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 MenuCard(
-                    title = "Pemilih Jari (Finger Chooser)",
-                    subtitle = "Sentuh layar bersama dan tentukan siapa yang terpilih!",
+                    title = "Finger Chooser",
+                    subtitle = "Touch the screen together to see who gets chosen!",
+                    emoji = "👆",
                     accentColor = NeonCyan,
-                    glowColor = NeonCyanGlow,
+                    rotation = -1.5f,
                     onClick = onNavigateToFingerChooser
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 MenuCard(
-                    title = "Roda Putar Custom (Roulette)",
-                    subtitle = "Buat pilihan kustommu dan putar roda keberuntungan!",
+                    title = "Custom Roulette",
+                    subtitle = "Create your custom choices and spin the wheel of fortune!",
+                    emoji = "🎡",
                     accentColor = NeonPurple,
-                    glowColor = NeonPurpleGlow,
+                    rotation = 1.2f,
                     onClick = onNavigateToRoulette
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 MenuCard(
-                    title = "Lempar Koin (Coin Flipper)",
-                    subtitle = "Keputusan cepat 50:50 dengan 3D koin interaktif!",
+                    title = "Coin Flip",
+                    subtitle = "Quick 50:50 decisions with an interactive 3D coin!",
+                    emoji = "🪙",
                     accentColor = NeonPink,
-                    glowColor = Color(0x66FF007F),
+                    rotation = -1.0f,
                     onClick = onNavigateToCoinFlip
                 )
             }
@@ -113,9 +115,9 @@ fun MainMenuScreen(
             Text(
                 text = "v1.0.0 • Let's Choose!",
                 fontSize = 12.sp,
-                color = TextSecondary.copy(alpha = 0.5f),
-                fontWeight = FontWeight.Light,
-                modifier = Modifier.navigationBarsPadding().padding(bottom = 10.dp)
+                color = TextSecondary.copy(alpha = 0.6f),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 12.dp)
             )
         }
     }
@@ -125,108 +127,60 @@ fun MainMenuScreen(
 fun MenuCard(
     title: String,
     subtitle: String,
+    emoji: String,
     accentColor: Color,
-    glowColor: Color,
+    rotation: Float,
     onClick: () -> Unit
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val borderAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
-        targetValue = 0.8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = EaseInOutSine),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "borderPulse"
-    )
-
-    Box(
+    DoodleCard(
+        backgroundColor = Color.White,
+        rotation = rotation,
+        shadowOffset = 6.dp,
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(110.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .background(ObsidianSurface)
-            .border(
-                width = 1.5.dp,
-                brush = Brush.linearGradient(
-                    colors = listOf(accentColor.copy(alpha = borderAlpha), BorderColor)
-                ),
-                shape = RoundedCornerShape(20.dp)
-            )
-            .clickable(onClick = onClick)
-            .padding(20.dp)
+            .height(115.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+            // Playful crayon background bullet with emoji
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(accentColor, RoundedCornerShape(12.dp))
+                    .border(2.5.dp, BorderColor, RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = emoji,
+                    fontSize = 28.sp
+                )
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = title,
-                    color = Color.White,
+                    color = TextPrimary,
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Black
                 )
-                // A decorative neon glowing dot
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .clip(RoundedCornerShape(5.dp))
-                        .background(accentColor)
-                        .drawBehind {
-                            drawCircle(
-                                color = glowColor,
-                                radius = size.minDimension * 2f
-                            )
-                        }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = subtitle,
+                    color = TextSecondary,
+                    fontSize = 12.sp,
+                    lineHeight = 15.sp,
+                    fontWeight = FontWeight.Medium
                 )
             }
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = subtitle,
-                color = TextSecondary,
-                fontSize = 13.sp,
-                lineHeight = 16.sp
-            )
         }
-    }
-}
-
-@Composable
-fun GlowingCircleBackground() {
-    val infiniteTransition = rememberInfiniteTransition(label = "bgOrb")
-    val offset1 by infiniteTransition.animateFloat(
-        initialValue = -100f,
-        targetValue = 100f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(4000, easing = EaseInOutQuad),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "x"
-    )
-
-    Canvas(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        drawCircle(
-            brush = Brush.radialGradient(
-                colors = listOf(Color(0x2200F0FF), Color.Transparent),
-                radius = 400f
-            ),
-            radius = 400f,
-            center = Offset(size.width * 0.2f + offset1, size.height * 0.2f)
-        )
-        drawCircle(
-            brush = Brush.radialGradient(
-                colors = listOf(Color(0x189D4EDD), Color.Transparent),
-                radius = 500f
-            ),
-            radius = 500f,
-            center = Offset(size.width * 0.8f - offset1, size.height * 0.7f)
-        )
     }
 }

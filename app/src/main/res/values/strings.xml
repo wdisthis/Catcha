@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Catcha</string>
-    <string name="title_finger_chooser">Pemilih Jari</string>
-    <string name="title_custom_roulette">Roda Putar</string>
-    <string name="title_coin_flip">Lempar Koin</string>
+    <string name="title_finger_chooser">Finger Chooser</string>
+    <string name="title_custom_roulette">Custom Roulette</string>
+    <string name="title_coin_flip">Coin Flip</string>
 </resources>
