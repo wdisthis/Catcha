@@ -3,6 +3,7 @@ package org.example
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.EaseInOutQuart
@@ -67,15 +68,24 @@ class MainActivity : ComponentActivity() {
                             onNavigateToRoulette = { currentScreen = "roulette" },
                             onNavigateToCoinFlip = { currentScreen = "coin" }
                         )
-                        "finger" -> FingerChooserScreen(
-                            onBack = { currentScreen = "menu" }
-                        )
-                        "roulette" -> RouletteScreen(
-                            onBack = { currentScreen = "menu" }
-                        )
-                        "coin" -> CoinFlipScreen(
-                            onBack = { currentScreen = "menu" }
-                        )
+                        "finger" -> {
+                            BackHandler { currentScreen = "menu" }
+                            FingerChooserScreen(
+                                onBack = { currentScreen = "menu" }
+                            )
+                        }
+                        "roulette" -> {
+                            BackHandler { currentScreen = "menu" }
+                            RouletteScreen(
+                                onBack = { currentScreen = "menu" }
+                            )
+                        }
+                        "coin" -> {
+                            BackHandler { currentScreen = "menu" }
+                            CoinFlipScreen(
+                                onBack = { currentScreen = "menu" }
+                            )
+                        }
                     }
                 }
             }
