@@ -57,8 +57,10 @@ fun FingerChooserScreen(onBack: () -> Unit) {
     val touchColors = remember { mutableStateMapOf<PointerId, Color>() }
     
     val winningPointers = remember { mutableStateListOf<PointerId>() }
+    val winnerPositions = remember { mutableStateMapOf<PointerId, Offset>() }
     
-    var countdownProgress by remember { mutableStateOf(1f) } // 1.0 down to 0.0
+    val countdownAnimatable = remember { Animatable(1f) }
+    val winnerRevealProgress = remember { Animatable(0f) }
     var countdownText by remember { mutableStateOf("") }
     
     var winnerColor by remember { mutableStateOf<Color?>(null) }
@@ -148,26 +150,42 @@ fun FingerChooserScreen(onBack: () -> Unit) {
     // Countdown and choosing logic
     LaunchedEffect(gameState) {
         if (gameState == FingerGameState.COUNTDOWN) {
-            countdownProgress = 1f
-            countdownText = "3"
-            triggerVibration(60, 120)
+            countdownAnimatable.snapTo(1f)
             
-            delay(1000)
-            if (gameState != FingerGameState.COUNTDOWN) return@LaunchedEffect
-            countdownProgress = 0.66f
-            countdownText = "2"
-            triggerVibration(60, 120)
+            // Launch parallel coroutine to handle countdown text changes and vibrations
+            val job = launch {
+                countdownText = "4"
+                triggerVibration(60, 120)
+                delay(1000)
+                if (gameState != FingerGameState.COUNTDOWN) return@launch
+                
+                countdownText = "3"
+                triggerVibration(60, 120)
+                delay(1000)
+                if (gameState != FingerGameState.COUNTDOWN) return@launch
+                
+                countdownText = "2"
+                triggerVibration(60, 120)
+                delay(1000)
+                if (gameState != FingerGameState.COUNTDOWN) return@launch
+                
+                countdownText = "1"
+                triggerVibration(60, 120)
+                delay(1000)
+                if (gameState != FingerGameState.COUNTDOWN) return@launch
+                
+                countdownText = "GO!"
+            }
             
-            delay(1000)
-            if (gameState != FingerGameState.COUNTDOWN) return@LaunchedEffect
-            countdownProgress = 0.33f
-            countdownText = "1"
-            triggerVibration(60, 120)
+            // Animate from 1f to 0f over 4 seconds smoothly
+            countdownAnimatable.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(durationMillis = 4000, easing = LinearEasing)
+            )
             
-            delay(1000)
+            job.join()
+            
             if (gameState != FingerGameState.COUNTDOWN) return@LaunchedEffect
-            countdownProgress = 0f
-            countdownText = "GO!"
             
             // SELECT WINNERS
             val keysList = activeTouches.keys.toList()
@@ -179,6 +197,14 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                 val winners = shuffledKeys.take(winnersCount)
                 winningPointers.addAll(winners)
                 
+                // Copy positions to the persistent winnerPositions map
+                winners.forEach { winnerId ->
+                    val pos = activeTouches[winnerId]
+                    if (pos != null) {
+                        winnerPositions[winnerId] = pos
+                    }
+                }
+                
                 val firstWinner = winners.firstOrNull()
                 if (firstWinner != null) {
                     winnerColor = touchColors[firstWinner]
@@ -188,6 +214,27 @@ fun FingerChooserScreen(onBack: () -> Unit) {
             } else {
                 gameState = FingerGameState.WAITING
             }
+        } else if (gameState == FingerGameState.WAITING) {
+            countdownAnimatable.snapTo(1f)
+            winnerPositions.clear()
+            winningPointers.clear()
+            winnerColor = null
+        }
+    }
+
+    // Winner reveal spotlight spring animation
+    LaunchedEffect(gameState) {
+        if (gameState == FingerGameState.SELECTED) {
+            winnerRevealProgress.snapTo(0f)
+            winnerRevealProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            )
+        } else {
+            winnerRevealProgress.snapTo(0f)
         }
     }
 
@@ -237,6 +284,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                                         activeTouches.remove(change.id)
                                     } else if (winningPointers.contains(change.id)) {
                                         activeTouches[change.id] = change.position
+                                        winnerPositions[change.id] = change.position
                                     }
                                 }
                             }
@@ -258,10 +306,10 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                     
                     var resultPath = fullScreenPath
                     winningPointers.forEach { winnerId ->
-                        val pos = activeTouches[winnerId]
+                        val pos = winnerPositions[winnerId]
                         if (pos != null) {
                             val circlePath = Path().apply {
-                                addOval(androidx.compose.ui.geometry.Rect(center = pos, radius = 120f))
+                                addOval(androidx.compose.ui.geometry.Rect(center = pos, radius = 170f * winnerRevealProgress.value))
                             }
                             resultPath = Path.combine(
                                 operation = PathOperation.Difference,
@@ -272,23 +320,23 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                     }
                     
                     // Draw subtracted path (translucent crayon overlay)
-                    drawPath(path = resultPath, color = firstWinnerColor.copy(alpha = 0.85f))
+                    drawPath(path = resultPath, color = firstWinnerColor.copy(alpha = 0.85f * winnerRevealProgress.value))
                     
                     // 2. Draw thick sketchy outlines around winning finger circles
                     winningPointers.forEach { winnerId ->
-                        val pos = activeTouches[winnerId]
+                        val pos = winnerPositions[winnerId]
                         if (pos != null) {
                             // Outermost thick sketch outline
                             drawCircle(
                                 color = BorderColor,
-                                radius = 120f,
+                                radius = 170f * winnerRevealProgress.value,
                                 center = pos,
                                 style = Stroke(width = 8f)
                             )
                             // Inner white border loop
                             drawCircle(
                                 color = Color.White,
-                                radius = 112f,
+                                radius = 160f * winnerRevealProgress.value,
                                 center = pos,
                                 style = Stroke(width = 4f)
                             )
@@ -300,7 +348,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                         val color = touchColors[pointerId] ?: NeonCyan
                         
                         // Sketchy Ripple (animated scale & alpha)
-                        val rippleRadius = 80f * rippleScale
+                        val rippleRadius = 110f * rippleScale
                         drawCircle(
                             color = color.copy(alpha = rippleAlpha),
                             radius = rippleRadius + 3f,
@@ -317,13 +365,13 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                         // Middle sketchy loop
                         drawCircle(
                             color = color.copy(alpha = 0.5f),
-                            radius = 60f + 2f,
+                            radius = 85f + 2f,
                             center = Offset(position.x - 2f, position.y + 2f),
                             style = Stroke(width = 4f)
                         )
                         drawCircle(
                             color = color.copy(alpha = 0.4f),
-                            radius = 60f - 2f,
+                            radius = 85f - 2f,
                             center = Offset(position.x + 1f, position.y - 1f),
                             style = Stroke(width = 3f)
                         )
@@ -331,7 +379,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                         // Core filled center
                         drawCircle(
                             color = color,
-                            radius = 45f,
+                            radius = 65f,
                             center = position
                         )
 
@@ -340,11 +388,11 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                             drawArc(
                                 color = BorderColor,
                                 startAngle = -90f,
-                                sweepAngle = 360f * countdownProgress,
+                                sweepAngle = 360f * countdownAnimatable.value,
                                 useCenter = false,
                                 style = Stroke(width = 8f),
-                                size = androidx.compose.ui.geometry.Size(180f, 180f),
-                                topLeft = Offset(position.x - 90f, position.y - 90f)
+                                size = androidx.compose.ui.geometry.Size(200f, 200f),
+                                topLeft = Offset(position.x - 100f, position.y - 100f)
                             )
                         }
                     }
