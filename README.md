@@ -97,5 +97,3 @@ Catcha/
 ```
 
 ---
-
-*Made for endless fun with friends. Enjoy choosing!*

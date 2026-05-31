@@ -35,6 +35,8 @@ import org.example.components.DoodleCard
 import org.example.components.DoodleButton
 import org.example.components.NotebookBackground
 import org.example.theme.*
+import kotlin.math.ln
+import kotlin.math.exp
 import kotlin.random.Random
 
 enum class FingerGameState {
@@ -230,7 +232,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                 targetValue = 1f,
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessMedium
+                    stiffness = Spring.StiffnessMediumLow
                 )
             )
         } else {
@@ -257,6 +259,15 @@ fun FingerChooserScreen(onBack: () -> Unit) {
             repeatMode = RepeatMode.Restart
         ),
         label = "rippleAlpha"
+    )
+    val winnerBeatScale by infiniteTransition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = 1.10f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(700, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "winnerBeatScale"
     )
 
     NotebookBackground {
@@ -297,9 +308,21 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                 val isSelectedState = gameState == FingerGameState.SELECTED
 
                 if (isSelectedState && winningPointers.isNotEmpty()) {
-                    // 1. Draw winner full-screen crayon overlay with hollow paths for winners
-                    val firstWinnerColor = winnerColor ?: touchColors[winningPointers.firstOrNull()] ?: NeonGreen
+                    // Compute logarithmic/exponential iris-out radius to prevent negative numbers on spring overshoot
+                    val maxDimension = maxOf(size.width, size.height)
+                    val startRadius = maxDimension * 1.5f
+                    val endRadius = 100f // 17% larger than 85f (85 * 1.176 = 100)
                     
+                    val logStart = ln(startRadius.toDouble())
+                    val logEnd = ln(endRadius.toDouble())
+                    val logCurrent = logStart + (logEnd - logStart) * winnerRevealProgress.value.toDouble()
+                    val baseRadius = exp(logCurrent).toFloat().coerceAtLeast(10f)
+                    
+                    // Apply beating scale smoothly as the reveal progress approaches completion
+                    val beatFactor = 1f + (winnerBeatScale - 1f) * winnerRevealProgress.value
+                    val currentRadius = baseRadius * beatFactor
+                    
+                    // 1. Draw winner full-screen Looney Tunes overlay with hollow paths for winners
                     val fullScreenPath = Path().apply {
                         addRect(androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height))
                     }
@@ -309,7 +332,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                         val pos = winnerPositions[winnerId]
                         if (pos != null) {
                             val circlePath = Path().apply {
-                                addOval(androidx.compose.ui.geometry.Rect(center = pos, radius = 170f * winnerRevealProgress.value))
+                                addOval(androidx.compose.ui.geometry.Rect(center = pos, radius = currentRadius))
                             }
                             resultPath = Path.combine(
                                 operation = PathOperation.Difference,
@@ -319,24 +342,26 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                         }
                     }
                     
-                    // Draw subtracted path (translucent crayon overlay)
-                    drawPath(path = resultPath, color = firstWinnerColor.copy(alpha = 0.85f * winnerRevealProgress.value))
+                    // Draw subtracted path (translucent overlay matching the winner's finger color)
+                    val firstWinnerColor = winnerColor ?: touchColors[winningPointers.firstOrNull()] ?: NeonGreen
+                    val overlayColor = firstWinnerColor.copy(alpha = (0.85f * winnerRevealProgress.value).coerceIn(0f, 1f))
+                    drawPath(path = resultPath, color = overlayColor)
                     
-                    // 2. Draw thick sketchy outlines around winning finger circles
+                    // 2. Draw thick sketchy outlines around winning finger circles that shrink with the spotlight
                     winningPointers.forEach { winnerId ->
                         val pos = winnerPositions[winnerId]
                         if (pos != null) {
                             // Outermost thick sketch outline
                             drawCircle(
                                 color = BorderColor,
-                                radius = 170f * winnerRevealProgress.value,
+                                radius = currentRadius,
                                 center = pos,
                                 style = Stroke(width = 8f)
                             )
                             // Inner white border loop
                             drawCircle(
                                 color = Color.White,
-                                radius = 160f * winnerRevealProgress.value,
+                                radius = (currentRadius - 8f).coerceAtLeast(1f),
                                 center = pos,
                                 style = Stroke(width = 4f)
                             )
@@ -400,13 +425,11 @@ fun FingerChooserScreen(onBack: () -> Unit) {
             }
 
             // Status Messages Overlay
-            val isSelectedState = gameState == FingerGameState.SELECTED
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .align(if (isSelectedState) Alignment.BottomCenter else Alignment.Center)
-                    .padding(horizontal = 32.dp)
-                    .padding(bottom = if (isSelectedState) 40.dp else 0.dp),
+                    .align(Alignment.Center)
+                    .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 when (gameState) {
