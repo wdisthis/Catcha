@@ -24,7 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.clickable
 import org.example.components.DoodleCard
+import org.example.components.DoodleButton
 import org.example.components.NotebookBackground
 import org.example.components.drawScribbleStar
 import org.example.components.drawZigzagLine
@@ -33,6 +35,7 @@ import org.example.theme.*
 @Composable
 fun MainMenuScreen(
     onNavigateToFingerChooser: () -> Unit,
+    onNavigateToFingerGrouper: () -> Unit,
     onNavigateToRoulette: () -> Unit,
     onNavigateToCoinFlip: () -> Unit
 ) {
@@ -40,6 +43,8 @@ fun MainMenuScreen(
     LaunchedEffect(context) {
         org.example.audio.BubbleSoundPlayer.initialize(context)
     }
+    var showSettingsDialog by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
     NotebookBackground {
         Column(
             modifier = Modifier
@@ -88,7 +93,7 @@ fun MainMenuScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(vertical = 32.dp),
+                    .padding(vertical = 12.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -100,7 +105,17 @@ fun MainMenuScreen(
                     onClick = onNavigateToFingerChooser
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+
+                MenuCard(
+                    title = "Finger Grouper",
+                    subtitle = "Touch together to split players into balanced teams!",
+                    icon = { FingerGrouperDoodle() },
+                    accentColor = NeonGreen,
+                    onClick = onNavigateToFingerGrouper
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
 
                 MenuCard(
                     title = "Custom Roulette",
@@ -110,7 +125,7 @@ fun MainMenuScreen(
                     onClick = onNavigateToRoulette
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 MenuCard(
                     title = "Coin Flip",
@@ -121,14 +136,207 @@ fun MainMenuScreen(
                 )
             }
 
-            // Footer Section
-            Text(
-                text = "v1.0.0 • Let's Choose!",
-                fontSize = 12.sp,
-                color = TextSecondary.copy(alpha = 0.6f),
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
+            // Footer Section with Settings & About
+            Row(
+                modifier = Modifier.padding(bottom = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Settings",
+                    fontSize = 14.sp,
+                    color = TextSecondary,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier.clickable {
+                        org.example.audio.BubbleSoundPlayer.playSmallPop()
+                        showSettingsDialog = true
+                    }
+                )
+                Text(
+                    text = "About",
+                    fontSize = 14.sp,
+                    color = TextSecondary,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier.clickable {
+                        org.example.audio.BubbleSoundPlayer.playSmallPop()
+                        showAboutDialog = true
+                    }
+                )
+            }
+        }
+
+        if (showSettingsDialog) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.6f))
+                    .clickable { showSettingsDialog = false },
+                contentAlignment = Alignment.Center
+            ) {
+                var soundEnabled by remember { mutableStateOf(org.example.data.AppSettings.isSoundEnabled) }
+                var vibrationEnabled by remember { mutableStateOf(org.example.data.AppSettings.isVibrationEnabled) }
+
+                DoodleCard(
+                    backgroundColor = Color.White,
+                    shadowOffset = 8.dp,
+                    modifier = Modifier
+                        .width(310.dp)
+                        .padding(24.dp)
+                        .clickable(enabled = false) {}
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "SETTINGS",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Black,
+                            color = TextPrimary,
+                            letterSpacing = 2.sp
+                        )
+
+                        // Sound Effects Toggle Card
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(CrayonYellow.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                                .border(2.5.dp, BorderColor, RoundedCornerShape(12.dp))
+                                .clickable {
+                                    soundEnabled = !soundEnabled
+                                    org.example.data.AppSettings.isSoundEnabled = soundEnabled
+                                    org.example.audio.BubbleSoundPlayer.playSmallPop()
+                                }
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Sound Effects",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
+                            )
+                            // Doodle style checkbox
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .background(if (soundEnabled) NeonCyan else Color.White, RoundedCornerShape(6.dp))
+                                    .border(2.dp, BorderColor, RoundedCornerShape(6.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (soundEnabled) {
+                                    Text("✓", color = TextPrimary, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                                }
+                            }
+                        }
+
+                        // Vibration Toggle Card
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(NeonPink.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                                .border(2.5.dp, BorderColor, RoundedCornerShape(12.dp))
+                                .clickable {
+                                    vibrationEnabled = !vibrationEnabled
+                                    org.example.data.AppSettings.isVibrationEnabled = vibrationEnabled
+                                    org.example.audio.BubbleSoundPlayer.playSmallPop()
+                                }
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Haptic Vibration",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
+                            )
+                            // Doodle style checkbox
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .background(if (vibrationEnabled) NeonPurple else Color.White, RoundedCornerShape(6.dp))
+                                    .border(2.dp, BorderColor, RoundedCornerShape(6.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (vibrationEnabled) {
+                                    Text("✓", color = Color.White, fontWeight = FontWeight.Black, fontSize = 12.sp)
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        DoodleButton(
+                            onClick = {
+                                org.example.audio.BubbleSoundPlayer.playSmallPop()
+                                showSettingsDialog = false
+                            },
+                            backgroundColor = NeonGreen,
+                            text = "SAVE & CLOSE",
+                            textColor = Color.White,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+        }
+
+        if (showAboutDialog) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.6f))
+                    .clickable { showAboutDialog = false },
+                contentAlignment = Alignment.Center
+            ) {
+                DoodleCard(
+                    backgroundColor = Color.White,
+                    shadowOffset = 8.dp,
+                    modifier = Modifier
+                        .width(310.dp)
+                        .padding(24.dp)
+                        .clickable(enabled = false) {}
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(
+                            text = "ABOUT CATCHA",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Black,
+                            color = TextPrimary,
+                            letterSpacing = 2.sp
+                        )
+
+                        Text(
+                            text = "Catcha is a playful, hand-drawn decision assistant designed to solve everyday dilemmas in a fun and interactive way!\n\nFeatures include:\n• Finger Chooser\n• Finger Grouper\n• Custom Roulette\n• Coin Flip",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextSecondary,
+                            textAlign = TextAlign.Start,
+                            lineHeight = 18.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        DoodleButton(
+                            onClick = {
+                                org.example.audio.BubbleSoundPlayer.playSmallPop()
+                                showAboutDialog = false
+                            },
+                            backgroundColor = NeonCyan,
+                            text = "CLOSE",
+                            textColor = Color.White,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -151,12 +359,12 @@ fun MenuCard(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .height(115.dp)
+            .height(102.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp, vertical = 12.dp),
+                .padding(horizontal = 20.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -191,6 +399,36 @@ fun MenuCard(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun FingerGrouperDoodle() {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val cx = size.width / 2f
+        val cy = size.height / 2f
+        
+        // Draw left cluster of two dots
+        drawCircle(color = BorderColor, radius = 6.dp.toPx(), center = Offset(cx - 10.dp.toPx(), cy - 6.dp.toPx()))
+        drawCircle(color = BorderColor, radius = 6.dp.toPx(), center = Offset(cx - 14.dp.toPx(), cy + 8.dp.toPx()))
+        
+        // Draw right cluster of two dots
+        drawCircle(color = BorderColor, radius = 6.dp.toPx(), center = Offset(cx + 12.dp.toPx(), cy - 8.dp.toPx()))
+        drawCircle(color = BorderColor, radius = 6.dp.toPx(), center = Offset(cx + 14.dp.toPx(), cy + 6.dp.toPx()))
+        
+        // Draw a dashed wavy line separating them
+        val path = Path().apply {
+            moveTo(cx - 2.dp.toPx(), cy - 16.dp.toPx())
+            quadraticBezierTo(cx + 4.dp.toPx(), cy, cx - 4.dp.toPx(), cy + 16.dp.toPx())
+        }
+        drawPath(
+            path = path,
+            color = BorderColor.copy(alpha = 0.6f),
+            style = Stroke(
+                width = 2.dp.toPx(),
+                pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(6f, 6f), 0f)
+            )
+        )
     }
 }
 

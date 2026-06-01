@@ -65,12 +65,19 @@ class MainActivity : ComponentActivity() {
                         )
                         "menu" -> MainMenuScreen(
                             onNavigateToFingerChooser = { currentScreen = "finger" },
+                            onNavigateToFingerGrouper = { currentScreen = "grouper" },
                             onNavigateToRoulette = { currentScreen = "roulette" },
                             onNavigateToCoinFlip = { currentScreen = "coin" }
                         )
                         "finger" -> {
                             BackHandler { currentScreen = "menu" }
                             FingerChooserScreen(
+                                onBack = { currentScreen = "menu" }
+                            )
+                        }
+                        "grouper" -> {
+                            BackHandler { currentScreen = "menu" }
+                            org.example.screens.FingerGrouperScreen(
                                 onBack = { currentScreen = "menu" }
                             )
                         }

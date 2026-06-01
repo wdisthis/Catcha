@@ -68,6 +68,7 @@ object BubbleSoundPlayer {
     }
 
     fun playSmallPop() {
+        if (!org.example.data.AppSettings.isSoundEnabled) return
         soundPool?.let { pool ->
             if (smallPopId != -1) {
                 pool.play(smallPopId, 1f, 1f, 1, 0, 1.0f)
@@ -76,6 +77,7 @@ object BubbleSoundPlayer {
     }
 
     fun playBigPop() {
+        if (!org.example.data.AppSettings.isSoundEnabled) return
         soundPool?.let { pool ->
             if (bigPopId != -1) {
                 pool.play(bigPopId, 1f, 1f, 1, 0, 1.0f)

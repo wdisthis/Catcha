@@ -99,6 +99,7 @@ fun RouletteScreen(onBack: () -> Unit) {
 
     // Trigger haptics
     fun triggerVibration(duration: Long, amplitude: Int = -1) {
+        if (!org.example.data.AppSettings.isVibrationEnabled) return
         try {
             if (vibrator != null && vibrator.hasVibrator()) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
