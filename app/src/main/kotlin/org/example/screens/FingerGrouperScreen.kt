@@ -357,14 +357,14 @@ fun FingerGrouperScreen(onBack: () -> Unit) {
                         
                         // Pulsating circular glow
                         drawCircle(
-                            color = grpColor.copy(alpha = 0.2f * progress),
+                            color = grpColor.copy(alpha = (0.2f * progress).coerceIn(0f, 1f)),
                             radius = 65.dp.toPx() * progress,
                             center = pos
                         )
                         
                         // Outer retro dashed ring
                         drawCircle(
-                            color = BorderColor.copy(alpha = progress),
+                            color = BorderColor.copy(alpha = progress.coerceIn(0f, 1f)),
                             radius = 52.dp.toPx() * progress,
                             center = pos,
                             style = Stroke(
@@ -653,7 +653,38 @@ fun FingerGrouperScreen(onBack: () -> Unit) {
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("↺", color = TextPrimary, fontWeight = FontWeight.Black, fontSize = 20.sp)
+                            Canvas(
+                                modifier = Modifier.size(22.dp)
+                            ) {
+                                val strokeWidthPx = 2.5.dp.toPx()
+                                val cx = size.width / 2f
+                                val cy = size.height / 2f
+                                val radius = size.minDimension * 0.35f
+                                
+                                val arcSize = androidx.compose.ui.geometry.Size(radius * 2, radius * 2)
+                                val topLeft = Offset(cx - radius, cy - radius)
+                                
+                                // Draw a clockwise circular arc with a gap at the top-right
+                                drawArc(
+                                    color = TextPrimary,
+                                    startAngle = 0f,
+                                    sweepAngle = 270f,
+                                    useCenter = false,
+                                    topLeft = topLeft,
+                                    size = arcSize,
+                                    style = Stroke(width = strokeWidthPx, cap = androidx.compose.ui.graphics.StrokeCap.Round)
+                                )
+                                
+                                // Arrowhead at the end (top-center, pointing right)
+                                val arrowSize = 4.dp.toPx()
+                                val arrowPath = Path().apply {
+                                    moveTo(cx, cy - radius - arrowSize)
+                                    lineTo(cx + arrowSize * 1.2f, cy - radius)
+                                    lineTo(cx, cy - radius + arrowSize)
+                                    close()
+                                }
+                                drawPath(path = arrowPath, color = TextPrimary)
+                            }
                         }
                     }
                 }
