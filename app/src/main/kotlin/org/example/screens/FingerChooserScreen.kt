@@ -51,6 +51,10 @@ fun FingerChooserScreen(onBack: () -> Unit) {
     val vibrator = remember { context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator }
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(context) {
+        org.example.audio.BubbleSoundPlayer.initialize(context)
+    }
+
     var gameState by remember { mutableStateOf(FingerGameState.WAITING) }
     var targetWinners by remember { mutableStateOf(1) }
     var minParticipants by remember { mutableStateOf(2) }
@@ -60,6 +64,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
     
     val winningPointers = remember { mutableStateListOf<PointerId>() }
     val winnerPositions = remember { mutableStateMapOf<PointerId, Offset>() }
+    val winnerColors = remember { mutableStateMapOf<PointerId, Color>() }
     
     val countdownAnimatable = remember { Animatable(1f) }
     val winnerRevealProgress = remember { Animatable(0f) }
@@ -205,6 +210,10 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                     if (pos != null) {
                         winnerPositions[winnerId] = pos
                     }
+                    val color = touchColors[winnerId]
+                    if (color != null) {
+                        winnerColors[winnerId] = color
+                    }
                 }
                 
                 val firstWinner = winners.firstOrNull()
@@ -213,6 +222,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                 }
                 
                 triggerVibration(400, 255)
+                org.example.audio.BubbleSoundPlayer.playBigPop()
             } else {
                 gameState = FingerGameState.WAITING
             }
@@ -220,6 +230,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
             countdownAnimatable.snapTo(1f)
             winnerPositions.clear()
             winningPointers.clear()
+            winnerColors.clear()
             winnerColor = null
         }
     }
@@ -283,8 +294,14 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                             if (gameState != FingerGameState.SELECTED) {
                                 changes.forEach { change ->
                                     if (change.pressed) {
+                                        if (!activeTouches.containsKey(change.id)) {
+                                            org.example.audio.BubbleSoundPlayer.playSmallPop()
+                                        }
                                         activeTouches[change.id] = change.position
                                     } else {
+                                        if (activeTouches.containsKey(change.id)) {
+                                            org.example.audio.BubbleSoundPlayer.playBigPop()
+                                        }
                                         activeTouches.remove(change.id)
                                     }
                                 }
@@ -292,6 +309,9 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                                 // In selected state, track releases AND track movements of winning fingers so they move smoothly
                                 changes.forEach { change ->
                                     if (!change.pressed) {
+                                        if (activeTouches.containsKey(change.id)) {
+                                            org.example.audio.BubbleSoundPlayer.playBigPop()
+                                        }
                                         activeTouches.remove(change.id)
                                     } else if (winningPointers.contains(change.id)) {
                                         activeTouches[change.id] = change.position
@@ -322,30 +342,70 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                     val beatFactor = 1f + (winnerBeatScale - 1f) * winnerRevealProgress.value
                     val currentRadius = baseRadius * beatFactor
                     
-                    // 1. Draw winner full-screen Looney Tunes overlay with hollow paths for winners
-                    val fullScreenPath = Path().apply {
-                        addRect(androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height))
-                    }
+                    // 1. Divide screen into regions depending on number of winners
+                    val winnersList = winningPointers.toList()
+                    val numWinners = winnersList.size
                     
-                    var resultPath = fullScreenPath
-                    winningPointers.forEach { winnerId ->
-                        val pos = winnerPositions[winnerId]
-                        if (pos != null) {
-                            val circlePath = Path().apply {
-                                addOval(androidx.compose.ui.geometry.Rect(center = pos, radius = currentRadius))
+                    val regions = when (numWinners) {
+                        1 -> listOf(
+                            androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height)
+                        )
+                        2 -> listOf(
+                            // Split vertically: left & right columns
+                            androidx.compose.ui.geometry.Rect(0f, 0f, size.width / 2f, size.height),
+                            androidx.compose.ui.geometry.Rect(size.width / 2f, 0f, size.width, size.height)
+                        )
+                        3 -> listOf(
+                            // Split horizontally: top, middle, bottom rows
+                            androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height / 3f),
+                            androidx.compose.ui.geometry.Rect(0f, size.height / 3f, size.width, 2f * size.height / 3f),
+                            androidx.compose.ui.geometry.Rect(0f, 2f * size.height / 3f, size.width, size.height)
+                        )
+                        4 -> listOf(
+                            // Split into a 2x2 grid: top-left, top-right, bottom-left, bottom-right
+                            androidx.compose.ui.geometry.Rect(0f, 0f, size.width / 2f, size.height / 2f),
+                            androidx.compose.ui.geometry.Rect(size.width / 2f, 0f, size.width, size.height / 2f),
+                            androidx.compose.ui.geometry.Rect(0f, size.height / 2f, size.width / 2f, size.height),
+                            androidx.compose.ui.geometry.Rect(size.width / 2f, size.height / 2f, size.width, size.height)
+                        )
+                        else -> {
+                            // Fallback for > 4 winners: split horizontally into equal rows
+                            val bandHeight = size.height / numWinners
+                            (0 until numWinners).map { idx ->
+                                androidx.compose.ui.geometry.Rect(0f, idx * bandHeight, size.width, (idx + 1) * bandHeight)
                             }
-                            resultPath = Path.combine(
-                                operation = PathOperation.Difference,
-                                path1 = resultPath,
-                                path2 = circlePath
-                            )
                         }
                     }
                     
-                    // Draw subtracted path (translucent overlay matching the winner's finger color)
-                    val firstWinnerColor = winnerColor ?: touchColors[winningPointers.firstOrNull()] ?: NeonGreen
-                    val overlayColor = firstWinnerColor.copy(alpha = (0.85f * winnerRevealProgress.value).coerceIn(0f, 1f))
-                    drawPath(path = resultPath, color = overlayColor)
+                    // Draw each region minus all the spotlight hollow circles
+                    winnersList.forEachIndexed { index, winnerId ->
+                        val regionRect = regions.getOrElse(index) {
+                            androidx.compose.ui.geometry.Rect(0f, 0f, size.width, size.height)
+                        }
+                        
+                        val regionPath = Path().apply {
+                            addRect(regionRect)
+                        }
+                        
+                        var subtractedRegionPath = regionPath
+                        winnersList.forEach { wId ->
+                            val pos = winnerPositions[wId]
+                            if (pos != null) {
+                                val circlePath = Path().apply {
+                                    addOval(androidx.compose.ui.geometry.Rect(center = pos, radius = currentRadius))
+                                }
+                                subtractedRegionPath = Path.combine(
+                                    operation = PathOperation.Difference,
+                                    path1 = subtractedRegionPath,
+                                    path2 = circlePath
+                                )
+                            }
+                        }
+                        
+                        val wColor = winnerColors[winnerId] ?: touchColors[winnerId] ?: NeonGreen
+                        val overlayColor = wColor.copy(alpha = (0.85f * winnerRevealProgress.value).coerceIn(0f, 1f))
+                        drawPath(path = subtractedRegionPath, color = overlayColor)
+                    }
                     
                     // 2. Draw thick sketchy outlines around winning finger circles that shrink with the spotlight
                     winningPointers.forEach { winnerId ->
@@ -506,7 +566,10 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                             .size(44.dp)
                             .background(Color.White, RoundedCornerShape(12.dp))
                             .border(2.5.dp, BorderColor, RoundedCornerShape(12.dp))
-                            .clickable(onClick = onBack),
+                            .clickable {
+                                org.example.audio.BubbleSoundPlayer.playSmallPop()
+                                onBack()
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         Text("◀", color = TextPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)
@@ -550,6 +613,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                                             )
                                             .clickable {
                                                 if (gameState == FingerGameState.WAITING) {
+                                                    org.example.audio.BubbleSoundPlayer.playSmallPop()
                                                     targetWinners = count
                                                     triggerVibration(30, 100)
                                                 }
@@ -594,6 +658,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                                             )
                                             .clickable {
                                                 if (gameState == FingerGameState.WAITING) {
+                                                    org.example.audio.BubbleSoundPlayer.playSmallPop()
                                                     minParticipants = count
                                                     triggerVibration(30, 100)
                                                 }
@@ -619,6 +684,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                                 .background(Color.White, RoundedCornerShape(12.dp))
                                 .border(2.5.dp, BorderColor, RoundedCornerShape(12.dp))
                                 .clickable {
+                                    org.example.audio.BubbleSoundPlayer.playSmallPop()
                                     gameState = FingerGameState.WAITING
                                     winningPointers.clear()
                                     winnerColor = null

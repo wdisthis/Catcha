@@ -36,6 +36,10 @@ fun MainMenuScreen(
     onNavigateToRoulette: () -> Unit,
     onNavigateToCoinFlip: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    LaunchedEffect(context) {
+        org.example.audio.BubbleSoundPlayer.initialize(context)
+    }
     NotebookBackground {
         Column(
             modifier = Modifier
@@ -141,7 +145,10 @@ fun MenuCard(
         backgroundColor = Color.White,
         rotation = 0f, // No rotation as requested (cards are completely straight!)
         shadowOffset = 6.dp,
-        onClick = onClick,
+        onClick = {
+            org.example.audio.BubbleSoundPlayer.playSmallPop()
+            onClick()
+        },
         modifier = Modifier
             .fillMaxWidth()
             .height(115.dp)
