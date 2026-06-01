@@ -56,6 +56,9 @@ data class RouletteOption(
 @Composable
 fun RouletteScreen(onBack: () -> Unit) {
     val context = LocalContext.current
+    LaunchedEffect(context) {
+        org.example.audio.BubbleSoundPlayer.initialize(context)
+    }
     val vibrator = remember { context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator }
     val scope = rememberCoroutineScope()
     val textMeasurer = rememberTextMeasurer()
@@ -247,7 +250,10 @@ fun RouletteScreen(onBack: () -> Unit) {
                         .size(44.dp)
                         .background(Color.White, RoundedCornerShape(12.dp))
                         .border(2.5.dp, BorderColor, RoundedCornerShape(12.dp))
-                        .clickable(onClick = onBack),
+                        .clickable {
+                            org.example.audio.BubbleSoundPlayer.playSmallPop()
+                            onBack()
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Text("◀", color = TextPrimary, fontWeight = FontWeight.Black, fontSize = 16.sp)

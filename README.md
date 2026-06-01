@@ -95,7 +95,3 @@ Catcha/
 │   └── libs.versions.toml                 # Centralized dependency Version Catalog
 └── settings.gradle.kts                    # Gradle settings and module inclusions
 ```
-
----
-
-*Made for endless fun with friends. Enjoy choosing!*
