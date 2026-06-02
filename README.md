@@ -1,6 +1,6 @@
 # Catcha - A Fun Decision-Making Assistant
 
-Catcha is an interactive Android application built using Jetpack Compose designed to help resolve everyday dilemmas in a playful and engaging way. Featuring a premium, hand-drawn school notebook theme with crayon aesthetics, the app turns mundane decisions into satisfying, tactile, and visual experiences.
+Catcha is an interactive Android application built using Jetpack Compose designed to help resolve everyday dilemmas in a playful and engaging way. Featuring hand-drawn school notebook theme with crayon aesthetics, the app turns mundane decisions into satisfying, tactile, and visual experiences.
 
 ---
 
@@ -84,7 +84,7 @@ This project is built using Gradle and can be opened in Android Studio or compil
 * Android SDK Platform API 34 or 35.
 
 ### Compiling via Terminal:
-1. Open your terminal or PowerShell in the root directory of the project: `d:\Project\app\Catcha`.
+1. Open your terminal or PowerShell in the root directory of the project, for example: `d:\Project\app\Catcha`.
 2. Run the following Gradle command to compile a debug APK:
    ```powershell
    .\gradlew assembleDebug
