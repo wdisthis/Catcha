@@ -22,7 +22,7 @@ val NeonCyanGlow = Color(0x334D96FF)
 
 // Ink and charcoal drawing colors
 val TextPrimary = Color(0xFF121212) // Deep ink black for main text
-val TextSecondary = Color(0xFF5A5A5A) // Soft crayon/charcoal for secondary text
+val TextSecondary = Color(0xFF2C2C2C) // Dark charcoal/ink for secondary text
 val BorderColor = Color(0xFF121212) // Hard ink black line for sketching outlines
 
 // Notebook line rules
