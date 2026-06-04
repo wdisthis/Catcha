@@ -36,9 +36,7 @@ import org.example.theme.*
 fun MainMenuScreen(
     onNavigateToFingerChooser: () -> Unit,
     onNavigateToFingerGrouper: () -> Unit,
-    onNavigateToFingerOrder: () -> Unit,
-    onNavigateToRoulette: () -> Unit,
-    onNavigateToCoinFlip: () -> Unit
+    onNavigateToFingerOrder: () -> Unit
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     LaunchedEffect(context) {
@@ -124,26 +122,6 @@ fun MainMenuScreen(
                     icon = { FingerOrderDoodle() },
                     accentColor = CrayonOrange,
                     onClick = onNavigateToFingerOrder
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                MenuCard(
-                    title = "Custom Roulette",
-                    subtitle = "Create your custom choices and spin the wheel of fortune!",
-                    icon = { RouletteDoodle(NeonPurple) },
-                    accentColor = NeonPurple,
-                    onClick = onNavigateToRoulette
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                MenuCard(
-                    title = "Coin Flip",
-                    subtitle = "Quick 50:50 decisions with an interactive 3D coin!",
-                    icon = { CoinFlipDoodle(NeonPink) },
-                    accentColor = NeonPink,
-                    onClick = onNavigateToCoinFlip
                 )
             }
 
@@ -325,7 +303,7 @@ fun MainMenuScreen(
                         )
 
                         Text(
-                            text = "Catcha is a playful, hand-drawn decision assistant designed to solve everyday dilemmas in a fun and interactive way!\n\nFeatures include:\n• Finger Chooser\n• Finger Grouper\n• Finger Order\n• Custom Roulette\n• Coin Flip",
+                            text = "Catcha is a playful, hand-drawn decision assistant designed to solve everyday dilemmas in a fun and interactive way!\n\nFeatures include:\n• Finger Chooser\n• Finger Grouper\n• Finger Order",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextSecondary,
@@ -472,7 +450,7 @@ fun FingerOrderDoodle() {
         )
 
         // Draw filled circles at each dot
-        listOf(dot1, dot2, dot3).forEachIndexed { index, pos ->
+        listOf(dot1, dot2, dot3).forEach { pos ->
             drawCircle(color = BorderColor, radius = 7.dp.toPx(), center = pos)
             // Small white number text placeholder (tiny circle inset)
             drawCircle(color = Color.White, radius = 3.dp.toPx(), center = pos)
