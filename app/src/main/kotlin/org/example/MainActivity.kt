@@ -9,10 +9,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.EaseInOutQuart
 import androidx.compose.runtime.*
 import androidx.core.view.WindowCompat
-import org.example.screens.CoinFlipScreen
 import org.example.screens.FingerChooserScreen
+import org.example.screens.FingerOrderScreen
 import org.example.screens.MainMenuScreen
-import org.example.screens.RouletteScreen
 import org.example.screens.SplashScreen
 import org.example.theme.CatchaTheme
 
@@ -66,8 +65,7 @@ class MainActivity : ComponentActivity() {
                         "menu" -> MainMenuScreen(
                             onNavigateToFingerChooser = { currentScreen = "finger" },
                             onNavigateToFingerGrouper = { currentScreen = "grouper" },
-                            onNavigateToRoulette = { currentScreen = "roulette" },
-                            onNavigateToCoinFlip = { currentScreen = "coin" }
+                            onNavigateToFingerOrder = { currentScreen = "order" }
                         )
                         "finger" -> {
                             BackHandler { currentScreen = "menu" }
@@ -81,15 +79,9 @@ class MainActivity : ComponentActivity() {
                                 onBack = { currentScreen = "menu" }
                             )
                         }
-                        "roulette" -> {
+                        "order" -> {
                             BackHandler { currentScreen = "menu" }
-                            RouletteScreen(
-                                onBack = { currentScreen = "menu" }
-                            )
-                        }
-                        "coin" -> {
-                            BackHandler { currentScreen = "menu" }
-                            CoinFlipScreen(
+                            FingerOrderScreen(
                                 onBack = { currentScreen = "menu" }
                             )
                         }
