@@ -466,6 +466,7 @@ fun FingerOrderScreen(onBack: () -> Unit) {
                                     color = Color.White,
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.Black,
+                                    fontFamily = CabinSketchFamily,
                                     textAlign = TextAlign.Center
                                 )
                             )
@@ -521,6 +522,7 @@ fun FingerOrderScreen(onBack: () -> Unit) {
                                         color = TextPrimary,
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Black,
+                                        fontFamily = CabinFamily,
                                         textAlign = TextAlign.Center
                                     )
                                 )
@@ -591,6 +593,7 @@ fun FingerOrderScreen(onBack: () -> Unit) {
                             text = "FINGER ORDER",
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = TextPrimary,
                             textAlign = TextAlign.Center,
                             letterSpacing = 2.sp
@@ -601,7 +604,8 @@ fun FingerOrderScreen(onBack: () -> Unit) {
                             fontSize = 14.sp,
                             color = TextSecondary,
                             textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = CabinFamily
                         )
                     }
                     OrderGameState.COUNTDOWN -> {
@@ -609,6 +613,7 @@ fun FingerOrderScreen(onBack: () -> Unit) {
                             text = countdownText,
                             fontSize = 96.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = TextPrimary,
                             textAlign = TextAlign.Center
                         )
@@ -617,6 +622,7 @@ fun FingerOrderScreen(onBack: () -> Unit) {
                             text = "HOLD YOUR FINGERS!",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = CrayonRed,
                             letterSpacing = 4.sp
                         )
@@ -626,6 +632,7 @@ fun FingerOrderScreen(onBack: () -> Unit) {
                             text = "REVEALING...",
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = TextPrimary,
                             textAlign = TextAlign.Center,
                             letterSpacing = 2.sp
@@ -636,6 +643,7 @@ fun FingerOrderScreen(onBack: () -> Unit) {
                             fontSize = 18.sp,
                             color = TextSecondary,
                             fontWeight = FontWeight.Bold,
+                            fontFamily = CabinFamily,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -644,6 +652,7 @@ fun FingerOrderScreen(onBack: () -> Unit) {
                             text = "ORDERED!",
                             fontSize = 38.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = TextPrimary,
                             textAlign = TextAlign.Center,
                             letterSpacing = 3.sp
@@ -654,6 +663,7 @@ fun FingerOrderScreen(onBack: () -> Unit) {
                             fontSize = 15.sp,
                             color = TextSecondary,
                             fontWeight = FontWeight.Bold,
+                            fontFamily = CabinFamily,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -712,13 +722,15 @@ fun FingerOrderScreen(onBack: () -> Unit) {
                                         text = "Min: $minFingers",
                                         color = TextPrimary,
                                         fontSize = 13.sp,
-                                        fontWeight = FontWeight.Black
+                                        fontWeight = FontWeight.Black,
+                                        fontFamily = CabinFamily
                                     )
                                     Text(
                                         text = "▼",
                                         color = TextSecondary,
                                         fontSize = 10.sp,
-                                        fontWeight = FontWeight.Black
+                                        fontWeight = FontWeight.Black,
+                                        fontFamily = CabinFamily
                                     )
                                 }
                             }
@@ -738,7 +750,8 @@ fun FingerOrderScreen(onBack: () -> Unit) {
                                                 text = "$count fingers",
                                                 color = if (minFingers == count) CrayonOrange else TextPrimary,
                                                 fontSize = 13.sp,
-                                                fontWeight = if (minFingers == count) FontWeight.Black else FontWeight.Bold
+                                                fontWeight = if (minFingers == count) FontWeight.Black else FontWeight.Bold,
+                                                fontFamily = CabinFamily
                                             )
                                         },
                                         onClick = {

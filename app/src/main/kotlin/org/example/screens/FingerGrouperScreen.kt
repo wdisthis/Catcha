@@ -461,6 +461,7 @@ fun FingerGrouperScreen(onBack: () -> Unit) {
                             text = "FINGER GROUPER",
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = TextPrimary,
                             textAlign = TextAlign.Center,
                             letterSpacing = 2.sp
@@ -471,7 +472,8 @@ fun FingerGrouperScreen(onBack: () -> Unit) {
                             fontSize = 14.sp,
                             color = TextSecondary,
                             textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = CabinFamily
                         )
                     }
                     GrouperGameState.COUNTDOWN -> {
@@ -479,6 +481,7 @@ fun FingerGrouperScreen(onBack: () -> Unit) {
                             text = countdownText,
                             fontSize = 96.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = TextPrimary,
                             textAlign = TextAlign.Center
                         )
@@ -487,6 +490,7 @@ fun FingerGrouperScreen(onBack: () -> Unit) {
                             text = "HOLD YOUR FINGERS!",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = CrayonRed,
                             letterSpacing = 4.sp
                         )
@@ -496,6 +500,7 @@ fun FingerGrouperScreen(onBack: () -> Unit) {
                             text = "GROUPED!",
                             fontSize = 38.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = TextPrimary,
                             textAlign = TextAlign.Center,
                             letterSpacing = 3.sp
@@ -506,6 +511,7 @@ fun FingerGrouperScreen(onBack: () -> Unit) {
                             fontSize = 15.sp,
                             color = TextSecondary,
                             fontWeight = FontWeight.Bold,
+                            fontFamily = CabinFamily,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -552,12 +558,12 @@ fun FingerGrouperScreen(onBack: () -> Unit) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Text(
+                                ) {                                    Text(
                                         text = "Groups:",
                                         color = TextSecondary,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Black,
+                                        fontFamily = CabinFamily,
                                         modifier = Modifier.width(68.dp)
                                     )
                                     (2..4).forEach { count ->
@@ -587,12 +593,13 @@ fun FingerGrouperScreen(onBack: () -> Unit) {
                                                 text = count.toString(),
                                                 color = TextPrimary,
                                                 fontSize = 13.sp,
-                                                fontWeight = FontWeight.Black
+                                                fontWeight = FontWeight.Black,
+                                                fontFamily = CabinFamily
                                             )
                                         }
                                     }
                                 }
-
+ 
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -602,6 +609,7 @@ fun FingerGrouperScreen(onBack: () -> Unit) {
                                         color = TextSecondary,
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Black,
+                                        fontFamily = CabinFamily,
                                         modifier = Modifier.width(68.dp)
                                     )
                                     val minPossible = targetGroups + 1
@@ -632,7 +640,8 @@ fun FingerGrouperScreen(onBack: () -> Unit) {
                                                 text = count.toString(),
                                                 color = if (isSelected) Color.White else TextPrimary,
                                                 fontSize = 13.sp,
-                                                fontWeight = FontWeight.Black
+                                                fontWeight = FontWeight.Black,
+                                                fontFamily = CabinFamily
                                             )
                                         }
                                     }

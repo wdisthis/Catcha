@@ -40,6 +40,7 @@ fun CatchaTheme(
 
     MaterialTheme(
         colorScheme = LightColorScheme,
+        typography = AppTypography,
         content = content
     )
 }

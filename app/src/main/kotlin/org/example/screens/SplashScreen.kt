@@ -97,6 +97,7 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
                 text = "CATCHA!",
                 fontSize = 42.sp,
                 fontWeight = FontWeight.Black,
+                fontFamily = CabinSketchFamily,
                 color = TextPrimary,
                 letterSpacing = 4.sp,
                 modifier = Modifier
@@ -119,6 +120,7 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
                 text = "Let's Choose!",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
+                fontFamily = CabinFamily,
                 color = TextSecondary.copy(alpha = 0.8f),
                 letterSpacing = 2.sp
             )

@@ -262,6 +262,7 @@ fun DoodleButton(
     textColor: Color = Color.Black,
     fontSize: Dp = 16.dp, // Note: using Dp-equivalent or converting later
     fontWeight: FontWeight = FontWeight.Black,
+    fontFamily: androidx.compose.ui.text.font.FontFamily = CabinSketchFamily,
     borderWidth: Dp = 3.dp,
     shadowOffset: Dp = 6.dp,
     enabled: Boolean = true
@@ -312,6 +313,7 @@ fun DoodleButton(
                 color = if (enabled) textColor else Color.Gray,
                 fontSize = fontSize.value.sp,
                 fontWeight = fontWeight,
+                fontFamily = fontFamily,
                 letterSpacing = 1.5.sp
             )
         }

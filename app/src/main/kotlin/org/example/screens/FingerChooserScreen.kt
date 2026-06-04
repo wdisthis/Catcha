@@ -499,6 +499,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                             text = if (activeTouches.isEmpty()) "PLACE YOUR FINGERS!" else "Need ${minParticipants - activeTouches.size} more fingers!",
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = TextPrimary,
                             textAlign = TextAlign.Center,
                             letterSpacing = 1.5.sp
@@ -509,7 +510,8 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                             fontSize = 14.sp,
                             color = TextSecondary,
                             textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = CabinFamily
                         )
                     }
                     FingerGameState.COUNTDOWN -> {
@@ -517,6 +519,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                             text = countdownText,
                             fontSize = 96.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = TextPrimary,
                             textAlign = TextAlign.Center
                         )
@@ -525,6 +528,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                             text = "HOLD YOUR FINGERS!",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = CrayonRed,
                             letterSpacing = 4.sp
                         )
@@ -534,6 +538,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                             text = "GOTCHA!",
                             fontSize = 38.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = TextPrimary,
                             textAlign = TextAlign.Center,
                             letterSpacing = 3.sp
@@ -544,6 +549,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                             fontSize = 15.sp,
                             color = TextSecondary,
                             fontWeight = FontWeight.Bold,
+                            fontFamily = CabinFamily,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -596,6 +602,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                                     color = TextSecondary,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Black,
+                                    fontFamily = CabinFamily,
                                     modifier = Modifier.width(68.dp)
                                 )
                                 (1..4).forEach { count ->
@@ -625,7 +632,8 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                                             text = count.toString(),
                                             color = TextPrimary,
                                             fontSize = 13.sp,
-                                            fontWeight = FontWeight.Black
+                                            fontWeight = FontWeight.Black,
+                                            fontFamily = CabinFamily
                                         )
                                     }
                                 }
@@ -640,6 +648,7 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                                     color = TextSecondary,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Black,
+                                    fontFamily = CabinFamily,
                                     modifier = Modifier.width(68.dp)
                                 )
                                 val minPossible = targetWinners + 1
@@ -670,7 +679,8 @@ fun FingerChooserScreen(onBack: () -> Unit) {
                                             text = count.toString(),
                                             color = if (isSelected) Color.White else TextPrimary,
                                             fontSize = 13.sp,
-                                            fontWeight = FontWeight.Black
+                                            fontWeight = FontWeight.Black,
+                                            fontFamily = CabinFamily
                                         )
                                     }
                                 }

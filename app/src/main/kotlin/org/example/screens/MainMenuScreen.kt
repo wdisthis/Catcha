@@ -61,6 +61,7 @@ fun MainMenuScreen(
                     text = "CATCHA",
                     fontSize = 44.sp,
                     fontWeight = FontWeight.Black,
+                    fontFamily = CabinSketchFamily,
                     color = TextPrimary,
                     letterSpacing = 6.sp,
                     modifier = Modifier
@@ -83,6 +84,7 @@ fun MainMenuScreen(
                     color = TextSecondary,
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
+                    fontFamily = CabinFamily,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
@@ -136,6 +138,7 @@ fun MainMenuScreen(
                     fontSize = 14.sp,
                     color = TextSecondary,
                     fontWeight = FontWeight.Black,
+                    fontFamily = CabinFamily,
                     modifier = Modifier.clickable {
                         org.example.audio.BubbleSoundPlayer.playSmallPop()
                         showSettingsDialog = true
@@ -146,6 +149,7 @@ fun MainMenuScreen(
                     fontSize = 14.sp,
                     color = TextSecondary,
                     fontWeight = FontWeight.Black,
+                    fontFamily = CabinFamily,
                     modifier = Modifier.clickable {
                         org.example.audio.BubbleSoundPlayer.playSmallPop()
                         showAboutDialog = true
@@ -182,6 +186,7 @@ fun MainMenuScreen(
                             text = "SETTINGS",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = TextPrimary,
                             letterSpacing = 2.sp
                         )
@@ -205,6 +210,7 @@ fun MainMenuScreen(
                                 text = "Sound Effects",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
+                                fontFamily = CabinFamily,
                                 color = TextPrimary
                             )
                             // Doodle style checkbox
@@ -240,6 +246,7 @@ fun MainMenuScreen(
                                 text = "Haptic Vibration",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
+                                fontFamily = CabinFamily,
                                 color = TextPrimary
                             )
                             // Doodle style checkbox
@@ -298,6 +305,7 @@ fun MainMenuScreen(
                             text = "ABOUT CATCHA",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Black,
+                            fontFamily = CabinSketchFamily,
                             color = TextPrimary,
                             letterSpacing = 2.sp
                         )
@@ -306,6 +314,7 @@ fun MainMenuScreen(
                             text = "Catcha is a playful, hand-drawn decision assistant designed to solve everyday dilemmas in a fun and interactive way!\n\nFeatures include:\n• Finger Chooser\n• Finger Grouper\n• Finger Order",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
+                            fontFamily = CabinFamily,
                             color = TextSecondary,
                             textAlign = TextAlign.Start,
                             lineHeight = 18.sp
@@ -376,7 +385,8 @@ fun MenuCard(
                     text = title,
                     color = TextPrimary,
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.Black
+                    fontWeight = FontWeight.Black,
+                    fontFamily = CabinSketchFamily
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -384,7 +394,8 @@ fun MenuCard(
                     color = TextSecondary,
                     fontSize = 12.sp,
                     lineHeight = 15.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = CabinFamily
                 )
             }
         }
