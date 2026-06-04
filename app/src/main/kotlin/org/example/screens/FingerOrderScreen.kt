@@ -285,8 +285,8 @@ fun FingerOrderScreen(onBack: () -> Unit) {
                                     // Finger released
                                     if (activeTouches.containsKey(id)) {
                                         activeTouches.remove(id)
-                                        touchColors.remove(id)
                                         if (!isLocked) {
+                                            touchColors.remove(id)
                                             triggerVibration(15, 60)
                                             org.example.audio.BubbleSoundPlayer.playBigPop()
                                         }
@@ -688,57 +688,69 @@ fun FingerOrderScreen(onBack: () -> Unit) {
 
                     // Config Panel or Reset Button
                     if (gameState != OrderGameState.REVEAL && gameState != OrderGameState.COMPLETED) {
-                        DoodleCard(
-                            backgroundColor = Color.White,
-                            shadowOffset = 4.dp,
-                            modifier = Modifier.width(180.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(10.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                        var dropdownExpanded by remember { mutableStateOf(false) }
+                        Box {
+                            // Dropdown trigger button
+                            Box(
+                                modifier = Modifier
+                                    .background(Color.White, RoundedCornerShape(12.dp))
+                                    .border(2.5.dp, BorderColor, RoundedCornerShape(12.dp))
+                                    .clickable {
+                                        if (gameState == OrderGameState.WAITING) {
+                                            org.example.audio.BubbleSoundPlayer.playSmallPop()
+                                            dropdownExpanded = true
+                                        }
+                                    }
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     Text(
-                                        text = "Min:",
-                                        color = TextSecondary,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Black,
-                                        modifier = Modifier.width(36.dp)
+                                        text = "Min: $minFingers",
+                                        color = TextPrimary,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Black
                                     )
-                                    (2..5).forEach { count ->
-                                        val isSelected = minFingers == count
-                                        Box(
-                                            modifier = Modifier
-                                                .size(28.dp)
-                                                .background(
-                                                    if (isSelected) CrayonOrange else Color.Transparent,
-                                                    RoundedCornerShape(8.dp)
-                                                )
-                                                .border(
-                                                    if (isSelected) 2.dp else 0.dp,
-                                                    if (isSelected) BorderColor else Color.Transparent,
-                                                    RoundedCornerShape(8.dp)
-                                                )
-                                                .clickable {
-                                                    if (gameState == OrderGameState.WAITING) {
-                                                        org.example.audio.BubbleSoundPlayer.playSmallPop()
-                                                        minFingers = count
-                                                        triggerVibration(30, 100)
-                                                    }
-                                                },
-                                            contentAlignment = Alignment.Center
-                                        ) {
+                                    Text(
+                                        text = "▼",
+                                        color = TextSecondary,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Black
+                                    )
+                                }
+                            }
+
+                            // Dropdown menu
+                            androidx.compose.material3.DropdownMenu(
+                                expanded = dropdownExpanded,
+                                onDismissRequest = { dropdownExpanded = false },
+                                modifier = Modifier
+                                    .background(Color.White)
+                                    .border(2.dp, BorderColor, RoundedCornerShape(8.dp))
+                            ) {
+                                (2..10).forEach { count ->
+                                    androidx.compose.material3.DropdownMenuItem(
+                                        text = {
                                             Text(
-                                                text = count.toString(),
-                                                color = if (isSelected) Color.White else TextPrimary,
+                                                text = "$count fingers",
+                                                color = if (minFingers == count) CrayonOrange else TextPrimary,
                                                 fontSize = 13.sp,
-                                                fontWeight = FontWeight.Black
+                                                fontWeight = if (minFingers == count) FontWeight.Black else FontWeight.Bold
                                             )
-                                        }
-                                    }
+                                        },
+                                        onClick = {
+                                            org.example.audio.BubbleSoundPlayer.playSmallPop()
+                                            minFingers = count
+                                            triggerVibration(30, 100)
+                                            dropdownExpanded = false
+                                        },
+                                        modifier = Modifier.background(
+                                            if (minFingers == count) CrayonOrange.copy(alpha = 0.1f) else Color.Transparent
+                                        )
+                                    )
                                 }
                             }
                         }
