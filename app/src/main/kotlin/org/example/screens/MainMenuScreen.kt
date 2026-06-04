@@ -36,6 +36,7 @@ import org.example.theme.*
 fun MainMenuScreen(
     onNavigateToFingerChooser: () -> Unit,
     onNavigateToFingerGrouper: () -> Unit,
+    onNavigateToFingerOrder: () -> Unit,
     onNavigateToRoulette: () -> Unit,
     onNavigateToCoinFlip: () -> Unit
 ) {
@@ -113,6 +114,16 @@ fun MainMenuScreen(
                     icon = { FingerGrouperDoodle() },
                     accentColor = NeonGreen,
                     onClick = onNavigateToFingerGrouper
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                MenuCard(
+                    title = "Finger Order",
+                    subtitle = "Touch together to get a random turn order!",
+                    icon = { FingerOrderDoodle() },
+                    accentColor = CrayonOrange,
+                    onClick = onNavigateToFingerOrder
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -314,7 +325,7 @@ fun MainMenuScreen(
                         )
 
                         Text(
-                            text = "Catcha is a playful, hand-drawn decision assistant designed to solve everyday dilemmas in a fun and interactive way!\n\nFeatures include:\n• Finger Chooser\n• Finger Grouper\n• Custom Roulette\n• Coin Flip",
+                            text = "Catcha is a playful, hand-drawn decision assistant designed to solve everyday dilemmas in a fun and interactive way!\n\nFeatures include:\n• Finger Chooser\n• Finger Grouper\n• Finger Order\n• Custom Roulette\n• Coin Flip",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextSecondary,
@@ -429,6 +440,43 @@ fun FingerGrouperDoodle() {
                 pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(6f, 6f), 0f)
             )
         )
+    }
+}
+
+@Composable
+fun FingerOrderDoodle() {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val cx = size.width / 2f
+        val cy = size.height / 2f
+
+        // Draw three numbered dots arranged in a triangle pattern
+        val dot1 = Offset(cx - 12.dp.toPx(), cy - 8.dp.toPx())
+        val dot2 = Offset(cx + 12.dp.toPx(), cy - 10.dp.toPx())
+        val dot3 = Offset(cx, cy + 10.dp.toPx())
+
+        // Connecting dashed arrows between dots (1 -> 2 -> 3)
+        val arrowPath = Path().apply {
+            moveTo(dot1.x, dot1.y)
+            lineTo(dot2.x, dot2.y)
+            lineTo(dot3.x, dot3.y)
+        }
+        drawPath(
+            path = arrowPath,
+            color = BorderColor.copy(alpha = 0.4f),
+            style = Stroke(
+                width = 2.dp.toPx(),
+                pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(6f, 5f), 0f),
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+
+        // Draw filled circles at each dot
+        listOf(dot1, dot2, dot3).forEachIndexed { index, pos ->
+            drawCircle(color = BorderColor, radius = 7.dp.toPx(), center = pos)
+            // Small white number text placeholder (tiny circle inset)
+            drawCircle(color = Color.White, radius = 3.dp.toPx(), center = pos)
+        }
     }
 }
 

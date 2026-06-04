@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.core.view.WindowCompat
 import org.example.screens.CoinFlipScreen
 import org.example.screens.FingerChooserScreen
+import org.example.screens.FingerOrderScreen
 import org.example.screens.MainMenuScreen
 import org.example.screens.RouletteScreen
 import org.example.screens.SplashScreen
@@ -66,6 +67,7 @@ class MainActivity : ComponentActivity() {
                         "menu" -> MainMenuScreen(
                             onNavigateToFingerChooser = { currentScreen = "finger" },
                             onNavigateToFingerGrouper = { currentScreen = "grouper" },
+                            onNavigateToFingerOrder = { currentScreen = "order" },
                             onNavigateToRoulette = { currentScreen = "roulette" },
                             onNavigateToCoinFlip = { currentScreen = "coin" }
                         )
@@ -78,6 +80,12 @@ class MainActivity : ComponentActivity() {
                         "grouper" -> {
                             BackHandler { currentScreen = "menu" }
                             org.example.screens.FingerGrouperScreen(
+                                onBack = { currentScreen = "menu" }
+                            )
+                        }
+                        "order" -> {
+                            BackHandler { currentScreen = "menu" }
+                            FingerOrderScreen(
                                 onBack = { currentScreen = "menu" }
                             )
                         }
