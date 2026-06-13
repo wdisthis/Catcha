@@ -3,6 +3,14 @@
 Catcha is an interactive Android application built using Jetpack Compose designed to help resolve everyday dilemmas in a playful and engaging way. Featuring a hand-drawn school notebook theme with crayon aesthetics, the app turns mundane decisions into satisfying, tactile, and visual experiences.
 
 ---
+<div align="center">
+
+| Splash Screen | Main Menu | Finger chooser | finger grouper | finger order |
+| :---: | :---: | :---: | :---: | :---: |
+| <img src="https://lh3.googleusercontent.com/d/1WeZ-XxKdacaJz7aXw5p8QlQAZ_oN3XWj" alt="Gambar 1" width="150"/> | <img src="https://lh3.googleusercontent.com/d/1UaF9tJ2uMYG4JcgBP2ds7dlPnhyLc3wI" alt="Gambar 2" width="150"/> | <img src="https://lh3.googleusercontent.com/d/1b_6XEfY_tuLvMQ7C5f4bmFPI3mSoYn7H" alt="Gambar 3" width="150"/> | <img src="https://lh3.googleusercontent.com/d/1GnW1LzP9vIlzqyyMb1_xVBHVlF3Oq8jy" alt="Gambar 4" width="150"/> | <img src="https://lh3.googleusercontent.com/d/192CBp9FJv7lYACpErpUdc_HPPQx46orf" alt="Gambar 5" width="150"/> |
+
+</div>
+
 ## Star History
 
 <p align="center">
