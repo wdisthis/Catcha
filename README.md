@@ -3,6 +3,18 @@
 Catcha is an interactive Android application built using Jetpack Compose designed to help resolve everyday dilemmas in a playful and engaging way. Featuring a hand-drawn school notebook theme with crayon aesthetics, the app turns mundane decisions into satisfying, tactile, and visual experiences.
 
 ---
+## Star History
+
+<p align="center">
+  <a href="https://www.star-history.com/?repos=wdisthis%2FCatcha&type=date&legend=top-left">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=wdisthis/Catcha&type=date&theme=dark&legend=top-left" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=wdisthis/Catcha&type=date&legend=top-left" />
+      <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=wdisthis/Catcha&type=date&legend=top-left" />
+    </picture>
+  </a>
+</p>
+
 
 ## Core Features Summary
 
